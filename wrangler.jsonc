@@ -1,0 +1,17 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "cong-trinh-dashboard",
+  "main": "dist/server/index.js",
+  "compatibility_date": "2025-11-01",
+  "vars": { "APP_MODE": "demo" },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "cong-trinh-db",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations",
+    },
+  ],
+  "triggers": { "crons": ["*/15 * * * *"] },
+  "observability": { "enabled": true },
+}

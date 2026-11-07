@@ -1,0 +1,11 @@
+# Never commit .dev.vars or actual secret values. Demo needs no secrets.
+APP_MODE=demo
+# Live mode requires Cloudflare Access JWT validation AND an allowed D1 member.
+# CF_ACCESS_TEAM_DOMAIN=your-team.cloudflareaccess.com
+# CF_ACCESS_AUD=your-application-audience
+# ADMIN_EMAIL=owner@example.com
+# TRELLO_API_KEY=
+# TRELLO_TOKEN=
+# GOOGLE_CLIENT_ID=
+# GOOGLE_CLIENT_SECRET=
+# GOOGLE_REFRESH_TOKEN=
