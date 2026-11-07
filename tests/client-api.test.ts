@@ -50,3 +50,29 @@ test("API requests stop Access redirects and preserve same-origin authentication
     globalThis.fetch = previous;
   }
 });
+
+test("explicit demo cannot call live APIs even when a browser session exists", async () => {
+  const descriptor = Object.getOwnPropertyDescriptor(globalThis, "window");
+  const previous = globalThis.fetch;
+  let calls = 0;
+  Object.defineProperty(globalThis, "window", {
+    configurable: true,
+    value: { location: { search: "?demo=1" } },
+  });
+  globalThis.fetch = async () => {
+    calls++;
+    return Response.json({ ok: true });
+  };
+  try {
+    await assert.rejects(
+      request("/settings", "PUT", { companyName: "Demo" }),
+      /Bản demo/,
+    );
+    await assert.rejects(request("/trello/workspaces"), /Bản demo/);
+    assert.equal(calls, 0);
+  } finally {
+    globalThis.fetch = previous;
+    if (descriptor) Object.defineProperty(globalThis, "window", descriptor);
+    else Reflect.deleteProperty(globalThis, "window");
+  }
+});

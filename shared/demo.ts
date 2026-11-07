@@ -222,15 +222,30 @@ export function makeDemo(now = new Date()): Workspace {
         assigneeId: owners[j],
         status,
         due: date(
-          i === 1 && j === 4
-            ? -3
-            : i === 3 && j === 4
-              ? -2
-              : i === 5
-                ? -20
-                : 3 + j * 3,
+          (i === 0 && j === 1) || (i === 3 && j === 3)
+            ? 0
+            : i === 1 && j === 2
+              ? -1
+              : i === 1 && j === 4
+                ? -3
+                : i === 3 && j === 4
+                  ? -2
+                  : i === 5
+                    ? -20
+                    : 3 + j * 3,
         ),
-        completedAt: status === "done" ? date(-25 + j) : "",
+        completedAt:
+          status === "done"
+            ? i === 5
+              ? date(-26 + j)
+              : (i === 0 && j === 1) ||
+                  (i === 1 && j === 2) ||
+                  (i === 3 && j === 3)
+                ? date(0)
+                : i === 1 && j === 0
+                  ? ""
+                  : date(-1 - ((i + j) % 7))
+            : "",
         weight: weights[j],
         progress:
           status === "done"
@@ -256,12 +271,44 @@ export function makeDemo(now = new Date()): Workspace {
       };
     }),
   );
+  // Include tasks without an owner/weight and archived work to explain warnings.
+  tasks.push({
+    id: "demo-unassigned",
+    projectId: "p3",
+    title: "Bổ sung số liệu khảo sát tuyến",
+    assigneeId: "",
+    status: "todo",
+    due: date(2),
+    completedAt: "",
+    weight: 0,
+    progress: 0,
+    hours: 8,
+    reviewRounds: 0,
+    blockReason: "",
+    url: "",
+  });
+  tasks.push({
+    id: "demo-archived",
+    projectId: "p5",
+    title: "Phương án cũ đã dừng",
+    assigneeId: "lan",
+    status: "doing",
+    due: date(-8),
+    completedAt: "",
+    weight: 5,
+    progress: 25,
+    hours: 8,
+    reviewRounds: 1,
+    blockReason: "",
+    url: "",
+    archived: true,
+  });
   const receipts: Workspace["receipts"] = [
     {
       id: "r1",
       projectId: "p1",
       amount: 156000000,
-      date: date(-95),
+      date: date(-50),
       reference: "PT-001",
       note: "Tạm ứng hợp đồng",
     },
@@ -329,6 +376,22 @@ export function makeDemo(now = new Date()): Workspace {
     receipts,
     terms: [
       {
+        id: "term-paid",
+        projectId: "p6",
+        title: "Thanh toán hoàn thành — đã thu đủ",
+        amount: 190000000,
+        received: 190000000,
+        due: date(-2),
+      },
+      {
+        id: "term-partial",
+        projectId: "p1",
+        title: "Tạm ứng — đã thu một phần",
+        amount: 200000000,
+        received: 156000000,
+        due: date(-7),
+      },
+      {
         id: "term1",
         projectId: "p2",
         title: "Thanh toán giai đoạn thiết kế",
@@ -355,6 +418,26 @@ export function makeDemo(now = new Date()): Workspace {
     ],
     documents: projects.flatMap((p) => [
       {
+        id: `d-${p.id}-3`,
+        projectId: p.id,
+        name: `${p.code}_Ho-so-ket-cau.pdf`,
+        category: "Thiết kế",
+        version: "V03",
+        status: p.status === "completed" ? "Phát hành" : "Đang chỉnh sửa",
+        url: "",
+        updatedAt: date(-1),
+      },
+      {
+        id: `d-${p.id}-4`,
+        projectId: p.id,
+        name: `${p.code}_Bien-ban-nghiem-thu.pdf`,
+        category: "Nghiệm thu",
+        version: "V01",
+        status: p.status === "completed" ? "Đã ký" : "Chờ duyệt",
+        url: "",
+        updatedAt: date(-3),
+      },
+      {
         id: `d-${p.id}-1`,
         projectId: p.id,
         name: `${p.code}_Hop-dong-tu-van.pdf`,
@@ -377,9 +460,86 @@ export function makeDemo(now = new Date()): Workspace {
     ]),
     settings: {
       companyName: "Công Trình",
-      listMapping: {},
+      listMapping: Object.fromEntries(
+        demoBoards({ projects }).flatMap((b) =>
+          b.lists.map((l, i) => [
+            l.id,
+            (["todo", "doing", "review", "done", "blocked"] as TaskStatus[])[i],
+          ]),
+        ),
+      ),
       lastSync: "",
       syncError: "",
     },
   };
+}
+
+// A coherent, explicitly fictional 14-day history built from the demo scenario.
+export function demoPersonnelReport(
+  w: Workspace,
+  day: string,
+  now = new Date(),
+): import("./personnel").PersonnelReport {
+  const today = localDate(now),
+    epoch = (v: string) => Date.parse(v + "T00:00:00Z"),
+    age = Math.round((epoch(today) - epoch(day)) / 86400000);
+  const previousDay = new Date(epoch(day) - 86400000)
+    .toISOString()
+    .slice(0, 10);
+  const available = age >= 0 && age < 14;
+  const at = (target: string) => {
+    const ago = Math.max(
+      0,
+      Math.round((epoch(today) - epoch(target)) / 86400000),
+    );
+    return w.tasks.map((original, index) => {
+      const t = { ...original };
+      if (!ago) return t;
+      if (t.status === "done") {
+        if (!t.completedAt || t.completedAt <= target) return t;
+        t.progress = Math.max(0, 95 - ago * (9 + (index % 4)));
+        t.status =
+          t.progress >= 75 ? "review" : t.progress > 0 ? "doing" : "todo";
+        t.completedAt = "";
+      } else if (t.status !== "todo") {
+        t.progress = Math.max(0, t.progress - ago * (5 + (index % 4)));
+        if (t.status === "review")
+          t.status =
+            t.progress >= 75 ? "review" : t.progress ? "doing" : "todo";
+        if (t.status === "blocked" && ago >= 2) {
+          t.status = t.progress ? "doing" : "todo";
+          t.blockReason = "";
+        }
+      }
+      return t;
+    });
+  };
+  return {
+    day,
+    source: !available ? "missing" : age === 0 ? "current" : "snapshot",
+    capturedAt: available ? day + "T10:00:00Z" : "",
+    tasks: available ? at(day) : [],
+    previousDay,
+    previousAvailable: available && age < 13,
+    previousTasks: available && age < 13 ? at(previousDay) : [],
+  };
+}
+
+export function demoBoards(w: Pick<Workspace, "projects">) {
+  const titles = [
+    "Chờ thực hiện",
+    "Đang thực hiện",
+    "Chờ kiểm tra",
+    "Hoàn thành",
+    "Vướng mắc",
+  ];
+  return w.projects.map((p, i) => ({
+    id: (9000 + i).toString(16).padStart(24, "0"),
+    name: p.name,
+    url: "",
+    lists: titles.map((name, j) => ({
+      id: (10000 + i * 100 + j).toString(16).padStart(24, "0"),
+      name,
+    })),
+  }));
 }

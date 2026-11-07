@@ -1,3 +1,4 @@
+import { demoPersonnelReport } from "../shared/demo";
 import { useEffect, useMemo, useState } from "react";
 import {
   Users,
@@ -20,19 +21,6 @@ import {
 } from "../shared/personnel";
 import { Avatar } from "./components";
 import { request } from "./api";
-function demoReport(w: Workspace, day: string): PersonnelReport {
-  return {
-    day,
-    source: day === localDate() ? "current" : "snapshot",
-    capturedAt: day + "T10:00:00Z",
-    tasks: w.tasks,
-    previousDay: new Date(Date.parse(day + "T00:00:00Z") - 86400000)
-      .toISOString()
-      .slice(0, 10),
-    previousAvailable: false,
-    previousTasks: [],
-  };
-}
 const number = (v: number | null, suffix = "") =>
   v === null
     ? "—"
@@ -67,7 +55,7 @@ export default function Personnel({
     setError("");
     setReport(null);
     (session.mode === "demo"
-      ? Promise.resolve(demoReport(w, day))
+      ? Promise.resolve(demoPersonnelReport(w, day))
       : request<PersonnelReport>(
           "/personnel/report?day=" + encodeURIComponent(day),
         )
@@ -317,7 +305,7 @@ export default function Personnel({
       </section>
       <div className="personnel-context">
         {session.mode === "demo"
-          ? "Số liệu minh họa; báo cáo tự động tổng hợp từ trạng thái công việc."
+          ? "Dữ liệu minh họa có lịch sử 14 ngày. Thử hôm nay và ngày trước để xem task tăng tiến độ, chuyển trạng thái, hoàn thành đúng/chậm hạn."
           : report?.source === "snapshot"
             ? `Lịch sử ngày ${day}, chốt lần cuối lúc ${new Date(report.capturedAt).toLocaleTimeString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })}. Phòng ban/team dùng phân nhóm nhân sự hiện tại.`
             : "Số liệu hiện tại; lịch sử trạng thái được lưu tự động mỗi 15 phút, không phải chấm công."}

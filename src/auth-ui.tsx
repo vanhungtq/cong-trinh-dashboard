@@ -130,6 +130,9 @@ export function Login() {
                 : "Đăng nhập"}
           </button>
         </form>
+        <a className="button" href="/?demo=1">
+          Khám phá bản demo
+        </a>
         <small>Quên mật khẩu? Liên hệ quản trị viên để được cấp lại.</small>
         {!!error && !status && (
           <button className="button" onClick={() => location.reload()}>

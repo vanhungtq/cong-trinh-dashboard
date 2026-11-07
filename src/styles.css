@@ -3388,3 +3388,51 @@ h1 {
     grid-template-columns: 1fr;
   }
 }
+.demo-tour {
+  padding: 24px;
+  margin-bottom: 24px;
+}
+.demo-tour > p {
+  margin: 12px 0 20px;
+  color: #718071;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.demo-tour > div {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.demo-tour > div > button {
+  position: relative;
+  display: grid;
+  gap: 9px;
+  text-align: left;
+  border: 1px solid #d9e5d4;
+  border-radius: 9px;
+  background: #f8faf6;
+  padding: 18px 28px 18px 16px;
+  color: #2c5945;
+  cursor: pointer;
+}
+.demo-tour button span {
+  color: #6e7e6c;
+  font-size: 12px;
+  line-height: 1.7;
+}
+.demo-tour button svg {
+  position: absolute;
+  right: 10px;
+  top: 18px;
+}
+.demo-tour > small {
+  display: block;
+  margin-top: 16px;
+  color: #80907b;
+  line-height: 1.7;
+}
+@media (max-width: 800px) {
+  .demo-tour > div {
+    grid-template-columns: 1fr;
+  }
+}

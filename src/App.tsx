@@ -1,3 +1,4 @@
+import { demoBoards } from "../shared/demo";
 import Personnel from "./Personnel";
 import { Login, AccountSettings } from "./auth-ui";
 import { useEffect, useMemo, useState } from "react";
@@ -73,7 +74,14 @@ import {
   taskSchema,
   termSchema,
 } from "../worker/validation";
-import { ApiError, bootstrap, persistDemo, request, resetDemo } from "./api";
+import {
+  demoPreview,
+  ApiError,
+  bootstrap,
+  persistDemo,
+  request,
+  resetDemo,
+} from "./api";
 import {
   Avatar,
   Badge,
@@ -208,9 +216,10 @@ export default function App() {
     };
     window.addEventListener("cong-trinh-auth-required", expired);
     (async () => {
-      const status = import.meta.env.DEV
-        ? { mode: "demo" }
-        : await request<{ mode: string }>("/auth/status");
+      const status =
+        import.meta.env.DEV || demoPreview()
+          ? { mode: "demo" }
+          : await request<{ mode: string }>("/auth/status");
       setAuthMode(status.mode);
       const d = await bootstrap();
       setW(d.workspace);
@@ -218,6 +227,7 @@ export default function App() {
       setCompany(d.workspace.settings.companyName);
       setMapping(d.workspace.settings.listMapping);
       setTrelloWorkspaceId(d.workspace.settings.trelloWorkspaceId || "");
+      if (d.session.mode === "demo") setBoards(demoBoards(d.workspace));
     })().catch((e) => {
       if (e instanceof ApiError && e.kind === "auth") setAuthRequired(true);
       else setLoadError(e.message);
@@ -716,6 +726,12 @@ export default function App() {
               Đăng xuất
             </button>
           )}
+          <a
+            className="nav-item"
+            href={session.mode === "demo" ? "/" : "/?demo=1"}
+          >
+            {session.mode === "demo" ? "Về dữ liệu thật" : "Khám phá bản demo"}
+          </a>
           <div className="sidebar-user">
             <Avatar person={session.user} size={36} />
             <div>
@@ -838,6 +854,55 @@ export default function App() {
           )}
           {page === "overview" && (
             <>
+              {session.mode === "demo" && (
+                <section className="panel demo-tour">
+                  <h2>Khám phá toàn bộ ứng dụng</h2>
+                  <p>
+                    Bộ mẫu gồm 6 dự án, phòng ban/team, task đủ trạng thái, dòng
+                    tiền và hồ sơ. Mọi tên và số liệu đều là minh họa.
+                  </p>
+                  <div>
+                    {[
+                      [
+                        "projects",
+                        "Dự án & task",
+                        "Mở Tân Trào để xem tiến độ; Kim Phú có vướng mắc; An Tường đã hoàn thành.",
+                      ],
+                      [
+                        "team",
+                        "Nhân sự & báo cáo",
+                        "Chọn phòng/team và Báo cáo ngày. Có lịch sử 14 ngày, task hoàn thành đúng/chậm hạn và chưa phân công.",
+                      ],
+                      [
+                        "finance",
+                        "Tài chính & công nợ",
+                        "Có đợt đã thu đủ, thu một phần, quá hạn và sắp đến hạn; dữ liệu thu trải nhiều tháng.",
+                      ],
+                      [
+                        "documents",
+                        "Hồ sơ & phiên bản",
+                        "Có hợp đồng, thiết kế, nghiệm thu, nhiều phiên bản và trạng thái duyệt.",
+                      ],
+                      [
+                        "settings",
+                        "Kết nối & cài đặt",
+                        "Xem cấu hình Trello/Drive và ánh xạ cột. Các kết nối mẫu không gọi tài khoản thật.",
+                      ],
+                    ].map(([key, title, note]) => (
+                      <button key={key} onClick={() => changePage(key as Page)}>
+                        <b>{title}</b>
+                        <span>{note}</span>
+                        <ArrowRight size={16} />
+                      </button>
+                    ))}
+                  </div>
+                  <small>
+                    Link Drive/Trello mẫu không trỏ tới tài liệu thật. Có thể
+                    sửa dữ liệu mẫu và khôi phục tại Kết nối & cài đặt.
+                  </small>
+                </section>
+              )}
+
               <div className="kpi-grid">
                 <Kpi
                   label={finance ? "Tổng giá trị hợp đồng" : "Tổng công việc"}
@@ -1768,7 +1833,7 @@ export default function App() {
                       <select
                         id={"target-" + b.id}
                         value={boardTargets[b.id] || ""}
-                        disabled={!admin || busy}
+                        disabled={!admin || busy || session.mode === "demo"}
                         onChange={(e) =>
                           setBoardTargets({
                             ...boardTargets,
@@ -1792,7 +1857,7 @@ export default function App() {
                           ))}
                       </select>
                     </div>
-                    {!!boardTargets[b.id] &&
+                    {(session.mode === "demo" || !!boardTargets[b.id]) &&
                       b.lists.map((l) => (
                         <div key={l.id}>
                           <label htmlFor={l.id}>{l.name}</label>
@@ -1853,7 +1918,9 @@ export default function App() {
                     <button
                       className="button primary"
                       disabled={
-                        busy || !Object.values(boardTargets).some(Boolean)
+                        busy ||
+                        session.mode === "demo" ||
+                        !Object.values(boardTargets).some(Boolean)
                       }
                       onClick={async () => {
                         setSettingsError("");

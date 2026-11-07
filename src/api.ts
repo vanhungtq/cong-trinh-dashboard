@@ -1,6 +1,13 @@
 import { makeDemo } from "../shared/demo";
+import { localDate } from "../shared/metrics";
 import type { Session, Workspace } from "../shared/types";
-const KEY = "cong-trinh-demo-v1";
+const KEY = "cong-trinh-demo-v2";
+export function demoPreview() {
+  return (
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("demo") === "1"
+  );
+}
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -15,6 +22,11 @@ export async function request<T>(
   method = "GET",
   data?: unknown,
 ): Promise<T> {
+  if (demoPreview())
+    throw new ApiError(
+      "Bản demo chỉ dùng dữ liệu minh họa trên trình duyệt, không gọi tài khoản dịch vụ thật.",
+      "server",
+    );
   let r: Response;
   try {
     r = await fetch("/api" + path, {
@@ -70,7 +82,7 @@ export async function bootstrap(): Promise<{
   session: Session;
 }> {
   let data: { workspace: Workspace; session: Session };
-  if (import.meta.env.DEV) {
+  if (import.meta.env.DEV || demoPreview()) {
     const workspace = makeDemo();
     data = {
       workspace,
@@ -85,8 +97,10 @@ export async function bootstrap(): Promise<{
     try {
       const saved = localStorage.getItem(KEY);
       if (saved) {
-        const parsed = JSON.parse(saved);
+        const envelope = JSON.parse(saved);
+        const parsed = envelope.day === localDate() ? envelope.workspace : null;
         if (
+          parsed &&
           Array.isArray(parsed.projects) &&
           Array.isArray(parsed.tasks) &&
           Array.isArray(parsed.people) &&
@@ -104,7 +118,7 @@ export async function bootstrap(): Promise<{
   return data;
 }
 export function persistDemo(w: Workspace) {
-  localStorage.setItem(KEY, JSON.stringify(w));
+  localStorage.setItem(KEY, JSON.stringify({ day: localDate(), workspace: w }));
 }
 export function resetDemo() {
   localStorage.removeItem("cong-trinh-personnel-demo-v1");

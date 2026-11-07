@@ -51,7 +51,7 @@ test("financial totals keep cash, accepted value and due payments distinct", () 
   assert.equal(t.contract, 4440000000);
   assert.equal(t.received, 1468000000);
   assert.equal(t.accepted, 2084000000);
-  assert.equal(t.overdue, 250000000);
+  assert.equal(t.overdue, 294000000);
 });
 test("on-time metric excludes unknown historical completion dates", () => {
   assert.equal(
