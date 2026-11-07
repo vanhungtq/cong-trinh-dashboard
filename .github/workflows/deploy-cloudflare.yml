@@ -1,0 +1,46 @@
+name: Deploy to Cloudflare
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "demo: sample data / live: company data with Cloudflare Access"
+        required: true
+        type: choice
+        default: demo
+        options: [demo, live]
+permissions:
+  contents: read
+concurrency:
+  group: cloudflare-production
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      D1_DATABASE_ID: ${{ vars.D1_DATABASE_ID }}
+      CF_ACCESS_TEAM_DOMAIN: ${{ vars.CF_ACCESS_TEAM_DOMAIN }}
+      CF_ACCESS_AUD: ${{ vars.CF_ACCESS_AUD }}
+      ADMIN_EMAIL: ${{ vars.ADMIN_EMAIL }}
+      APP_MODE: ${{ inputs.mode }}
+      TRELLO_API_KEY: ${{ secrets.TRELLO_API_KEY }}
+      TRELLO_TOKEN: ${{ secrets.TRELLO_TOKEN }}
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: node scripts/configure-cloudflare.mjs
+      - run: npm run build
+      - name: Apply database migrations
+        run: npm run db:remote
+      - name: Upload Worker with configured secrets
+        run: node scripts/deploy-cloudflare.mjs
