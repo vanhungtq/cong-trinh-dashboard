@@ -3,15 +3,23 @@
   "name": "cong-trinh-dashboard",
   "main": "dist/server/index.js",
   "compatibility_date": "2025-11-01",
-  "vars": { "APP_MODE": "demo" },
+  "vars": {
+    "APP_MODE": "demo"
+  },
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "cong-trinh-db",
-      "database_id": "00000000-0000-0000-0000-000000000000",
-      "migrations_dir": "migrations",
-    },
+      "database_id": "96c00982-bcdf-455d-986a-9cb8e403daad",
+      "migrations_dir": "migrations"
+    }
   ],
-  "triggers": { "crons": ["*/15 * * * *"] },
-  "observability": { "enabled": true },
+  "triggers": {
+    "crons": [
+      "*/15 * * * *"
+    ]
+  },
+  "observability": {
+    "enabled": true
+  }
 }
