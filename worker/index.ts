@@ -1,9 +1,4 @@
-import {
-  capturePersonnel,
-  personnelReport,
-  saveDailyLog,
-  updateMember,
-} from "./personnel";
+import { capturePersonnel, personnelReport, updateMember } from "./personnel";
 import { handlePasswordAuth } from "./password-auth";
 import { ZodError } from "zod";
 import { makeDemo } from "../shared/demo";
@@ -161,8 +156,6 @@ export async function handleApi(req: Request, env: Env) {
     return json(
       await personnelReport(env, user, url.searchParams.get("day") || ""),
     );
-  if (path === "/api/personnel/log" && req.method === "PUT")
-    return json(await saveDailyLog(env, user, await body(req)));
   const memberUpdate = path.match(/^\/api\/members\/([^/]+)$/);
   if (memberUpdate && req.method === "PUT") {
     roleAllowed(user, ["admin"]);

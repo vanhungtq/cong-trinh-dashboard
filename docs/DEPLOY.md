@@ -125,4 +125,4 @@ Mã nguồn có `.openai/hosting.json` dùng cho bản demo riêng tư được 
 
 ## Cập nhật Nhân sự và báo cáo ngày
 
-Chạy migrations trước deploy (`npx wrangler d1 migrations apply DB --remote && npx wrangler deploy`). Migration `0005_personnel.sql` thêm bảng báo cáo và ảnh chụp trạng thái ngày, giữ dữ liệu cũ. Sau deploy, admin vào Nhân sự → nút sửa trên từng thẻ để phân Phòng ban/Team. Nhân viên vào tab Báo cáo ngày để ghi báo cáo của mình. Cron 15 phút sẽ bắt đầu lưu lịch sử từ thời điểm này; ngày chưa có lịch sử hiển thị thông báo thiếu dữ liệu.
+Chạy migrations trước deploy (`npx wrangler d1 migrations apply DB --remote && npx wrangler deploy`). Migration `0005_personnel.sql` thêm bảng báo cáo và ảnh chụp trạng thái ngày, giữ dữ liệu cũ. Sau deploy, admin vào Nhân sự → nút sửa trên từng thẻ để phân Phòng ban/Team. Tab Báo cáo ngày tự tổng hợp tình trạng/hiệu suất từ các task, không cần nhân viên nhập báo cáo. Cron 15 phút sẽ bắt đầu lưu lịch sử từ thời điểm này; ngày chưa có lịch sử hiển thị thông báo thiếu dữ liệu.

@@ -99,6 +99,6 @@ Kiểm thử dùng SQLite trong bộ nhớ tương thích các câu SQL hiện t
 
 - Lọc theo ngày (giờ Việt Nam), phòng ban, team, nhân sự; xem thẻ tổng quan hoặc bảng công việc có trạng thái bằng màu và chữ, xuất CSV theo bộ lọc.
 - Admin có thể sửa hồ sơ nhân sự, phân phòng/team và Trello Member ID. Chủ nhiệm chỉ xem công việc trong dự án phụ trách; nhân viên/kế toán xem báo cáo của bản thân.
-- Nhân viên ghi báo cáo cho task được giao: giờ thực tế tự báo cáo, tiến độ tự báo cáo, kết quả, kế hoạch và vướng mắc. Một bản ghi/ngày/task/người; gửi lại để sửa. Tổng giờ/người/ngày không vượt 24. Tiến độ tự báo cáo không tự sửa tiến độ được chủ nhiệm xác nhận.
+- Báo cáo tự động từ task: công việc đang mở, hoàn thành trong ngày, tiến độ có trọng số, tỷ lệ đúng hạn, task tăng tiến độ/đổi trạng thái so với cuối ngày trước; danh sách task quá hạn/vướng mắc cần ưu tiên. Không có form nhân viên nhập báo cáo hoặc giờ làm. So sánh chỉ tính task có ở cả hai ngày và cùng người phụ trách.
 - Chỉ số hoàn thành/đúng hạn trong ngày dựa trên ngày hoàn thành quan sát được. Thiếu lịch sử hiển thị “—”; không có điểm KPI suy diễn. Tổng giờ dự kiến đang mở không phải tải công việc trong một tuần.
 - Migration `0005_personnel.sql` thêm lịch sử ngày và báo cáo. Cron hiện có lưu trạng thái task mỗi 15 phút, kể cả khi chưa cấu hình Trello; mỗi ngày giữ lần lưu cuối, không phải nhật ký mọi thay đổi. Không dựng lịch sử cho ngày trước khi triển khai. Báo cáo lịch sử được lọc theo phân nhóm nhân sự hiện tại.

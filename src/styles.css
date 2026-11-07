@@ -3340,69 +3340,8 @@ h1 {
   background: #ffe8e7;
   color: #b93f3f;
 }
-.personnel-report-layout {
-  display: grid;
-  grid-template-columns: 1.1fr 1fr;
-  gap: 22px;
-}
-.personnel-log-list,
-.personnel-log-form {
-  padding: 24px;
-  min-width: 0;
-}
-.personnel-log-list > p,
-.personnel-log-form > p {
-  color: #7e897f;
-  font-size: 12px;
-  line-height: 1.7;
-  margin: 12px 0 20px;
-}
-.personnel-log-list article {
-  padding: 18px 0;
-  border-top: 1px solid #e7ede5;
-}
-.personnel-log-list header {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 12px;
-  font-size: 12px;
-}
-.personnel-log-list header span {
-  color: #7450ad;
-  background: #f4f0fc;
-  padding: 4px 8px;
-  border-radius: 5px;
-}
-.personnel-log-list h4 {
-  margin-bottom: 12px;
-}
-.personnel-log-list article p {
-  font-size: 12px;
-  line-height: 1.7;
-  margin: 8px 0;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}
-.personnel-blocker {
-  background: #fff6e7;
-  padding: 10px;
-  border-radius: 6px;
-  color: #906516;
-}
-.personnel-log-form form {
-  display: grid;
-  gap: 16px;
-}
-.personnel-log-form textarea {
-  resize: vertical;
-  min-height: 75px;
-}
-.personnel-log-numbers {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+.personnel-priority-heading {
+  margin: 28px 0 16px;
 }
 @media (max-width: 1250px) {
   .personnel-grid {

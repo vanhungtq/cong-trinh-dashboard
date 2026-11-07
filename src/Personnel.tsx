@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Users,
   CheckCheck,
@@ -16,51 +16,21 @@ import {
   organizationName,
   personnelMetrics,
   type PersonnelReport,
-  type DailyLog,
+  taskMovement,
 } from "../shared/personnel";
 import { Avatar } from "./components";
 import { request } from "./api";
-const demoKey = "cong-trinh-personnel-demo-v1";
 function demoReport(w: Workspace, day: string): PersonnelReport {
-  let logs: DailyLog[] = [];
-  try {
-    logs = JSON.parse(localStorage.getItem(demoKey) || "[]");
-  } catch {}
-  const illustrative: DailyLog[] = w.people.flatMap((p) => {
-    const t = w.tasks.find((t) => t.assigneeId === p.id && !t.archived);
-    return t
-      ? [
-          {
-            day,
-            taskId: t.id,
-            memberId: p.id,
-            projectId: t.projectId,
-            hours: 1.5,
-            progress: t.progress,
-            done: "[Demo] Đã rà soát hồ sơ và cập nhật công việc.",
-            plan: "[Demo] Tiếp tục hoàn thiện hạng mục được giao.",
-            blockers: t.blockReason || "",
-            updatedAt: day + "T10:00:00Z",
-          },
-        ]
-      : [];
-  });
-  const recorded = logs.filter((l) => l.day === day);
-  logs = [
-    ...illustrative.filter(
-      (l) =>
-        !recorded.some(
-          (r) => r.taskId === l.taskId && r.memberId === l.memberId,
-        ),
-    ),
-    ...recorded,
-  ];
   return {
     day,
     source: day === localDate() ? "current" : "snapshot",
     capturedAt: day + "T10:00:00Z",
     tasks: w.tasks,
-    logs: logs.filter((l) => l.day === day),
+    previousDay: new Date(Date.parse(day + "T00:00:00Z") - 86400000)
+      .toISOString()
+      .slice(0, 10),
+    previousAvailable: false,
+    previousTasks: [],
   };
 }
 const number = (v: number | null, suffix = "") =>
@@ -89,14 +59,6 @@ export default function Personnel({
     [loading, setLoading] = useState(false),
     [error, setError] = useState(""),
     [version, setVersion] = useState(0);
-  const [taskId, setTaskId] = useState(""),
-    [hours, setHours] = useState(""),
-    [progress, setProgress] = useState(""),
-    [done, setDone] = useState(""),
-    [plan, setPlan] = useState(""),
-    [blockers, setBlockers] = useState(""),
-    [saving, setSaving] = useState(false),
-    [saved, setSaved] = useState("");
   const admin = session.user.role === "admin",
     manager = session.user.role === "manager";
   useEffect(() => {
@@ -129,8 +91,7 @@ export default function Personnel({
         (p) =>
           admin ||
           (manager
-            ? (report?.tasks || w.tasks).some((t) => t.assigneeId === p.id) ||
-              !!report?.logs.some((l) => l.memberId === p.id)
+            ? (report?.tasks || w.tasks).some((t) => t.assigneeId === p.id)
             : p.id === session.user.id),
       ),
     [w, report, admin, manager, session.user.id],
@@ -166,21 +127,11 @@ export default function Personnel({
     admin || manager
       ? (report?.tasks || []).filter((t) => !t.assigneeId).length
       : 0;
-  const logs = (report?.logs || []).filter((l) => ids.has(l.memberId));
-  const metrics = personnelMetrics(tasks, logs, day);
-  const ownTasks = w.tasks.filter(
-    (t) => t.assigneeId === session.user.id && !t.archived,
+  const metrics = personnelMetrics(tasks, day);
+  const previous = (report?.previousTasks || []).filter((t) =>
+    ids.has(t.assigneeId),
   );
-  useEffect(() => {
-    const log = report?.logs.find(
-      (l) => l.taskId === taskId && l.memberId === session.user.id,
-    );
-    setHours(log ? String(log.hours) : "");
-    setProgress(log ? String(log.progress) : "");
-    setDone(log?.done || "");
-    setPlan(log?.plan || "");
-    setBlockers(log?.blockers || "");
-  }, [taskId, report, session.user.id]);
+  const movement = taskMovement(tasks, previous, !!report?.previousAvailable);
   function exportCsv() {
     const rows: (string | number)[][] = [
       [
@@ -195,13 +146,15 @@ export default function Personnel({
         "Tiến độ có trọng số (%)",
         "Đúng hạn (%)",
         "Mẫu đúng hạn",
-        "Giờ tự báo cáo",
+        "Task tăng tiến độ so với hôm trước",
+        "Task chuyển hoàn thành",
+        "Task đổi trạng thái",
+        "Giờ dự kiến đang mở",
       ],
     ];
     for (const p of filtered) {
       const m = personnelMetrics(
         tasks.filter((t) => t.assigneeId === p.id),
-        logs.filter((l) => l.memberId === p.id),
         day,
       );
       rows.push([
@@ -216,39 +169,26 @@ export default function Personnel({
         m.progress ?? "",
         m.onTime ?? "",
         m.onTimeSample,
-        m.hours,
+        taskMovement(
+          tasks.filter((t) => t.assigneeId === p.id),
+          previous,
+          !!report?.previousAvailable,
+        ).improved ?? "",
+        taskMovement(
+          tasks.filter((t) => t.assigneeId === p.id),
+          previous,
+          !!report?.previousAvailable,
+        ).completed ?? "",
+        taskMovement(
+          tasks.filter((t) => t.assigneeId === p.id),
+          previous,
+          !!report?.previousAvailable,
+        ).changed ?? "",
+        m.estimated,
       ]);
     }
-    const exportRows =
-      tab === "reports"
-        ? [
-            [
-              "Ngày",
-              "Nhân sự",
-              "Công việc",
-              "Giờ tự báo cáo",
-              "Tiến độ tự báo cáo (%)",
-              "Đã làm",
-              "Tiếp theo",
-              "Vướng mắc",
-            ],
-            ...logs.map((l) => [
-              day,
-              w.people.find((p) => p.id === l.memberId)?.name || "",
-              (
-                report?.tasks.find((t) => t.id === l.taskId) ||
-                w.tasks.find((t) => t.id === l.taskId)
-              )?.title || l.taskId,
-              l.hours,
-              l.progress,
-              l.done,
-              l.plan,
-              l.blockers,
-            ]),
-          ]
-        : rows;
     const url = URL.createObjectURL(
-      new Blob(["\ufeff" + csv(exportRows)], {
+      new Blob(["\ufeff" + csv(rows)], {
         type: "text/csv;charset=utf-8",
       }),
     );
@@ -257,62 +197,6 @@ export default function Personnel({
     a.download = "bao-cao-nhan-su-" + day + ".csv";
     a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
-  }
-  async function saveLog(e: FormEvent) {
-    e.preventDefault();
-    setSaving(true);
-    setError("");
-    setSaved("");
-    try {
-      const data = {
-        day,
-        taskId,
-        hours: Number(hours),
-        progress: Number(progress),
-        done,
-        plan,
-        blockers,
-      };
-      if (session.mode === "demo") {
-        const task = ownTasks.find((t) => t.id === taskId);
-        if (!task) throw Error("Chọn công việc được giao cho bạn.");
-        let all: DailyLog[] = [];
-        try {
-          all = JSON.parse(localStorage.getItem(demoKey) || "[]");
-        } catch {}
-        all = all.filter(
-          (l) =>
-            !(
-              l.day === day &&
-              l.taskId === taskId &&
-              l.memberId === session.user.id
-            ),
-        );
-        if (
-          all
-            .filter((l) => l.day === day && l.memberId === session.user.id)
-            .reduce((s, l) => s + l.hours, 0) +
-            data.hours >
-          24
-        )
-          throw Error("Tổng giờ báo cáo trong ngày không được vượt 24 giờ.");
-        all.push({
-          ...data,
-          memberId: session.user.id,
-          projectId: task.projectId,
-          updatedAt: new Date().toISOString(),
-        });
-        localStorage.setItem(demoKey, JSON.stringify(all));
-      } else await request("/personnel/log", "PUT", data);
-      setVersion((v) => v + 1);
-      setSaved(
-        "Đã lưu báo cáo. Tiến độ tự báo cáo không thay đổi tiến độ đã được chủ nhiệm xác nhận.",
-      );
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      setSaving(false);
-    }
   }
   const taskFiltered = tasks.filter(
     (t) =>
@@ -424,11 +308,7 @@ export default function Personnel({
         </button>
         <button
           className="button"
-          disabled={
-            !report ||
-            (report.source === "missing" && tab !== "reports") ||
-            loading
-          }
+          disabled={!report || report.source === "missing" || loading}
           onClick={exportCsv}
         >
           <Download size={15} />
@@ -437,7 +317,7 @@ export default function Personnel({
       </section>
       <div className="personnel-context">
         {session.mode === "demo"
-          ? "Số liệu minh họa; báo cáo tự nhập lưu trên trình duyệt."
+          ? "Số liệu minh họa; báo cáo tự động tổng hợp từ trạng thái công việc."
           : report?.source === "snapshot"
             ? `Lịch sử ngày ${day}, chốt lần cuối lúc ${new Date(report.capturedAt).toLocaleTimeString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })}. Phòng ban/team dùng phân nhóm nhân sự hiện tại.`
             : "Số liệu hiện tại; lịch sử trạng thái được lưu tự động mỗi 15 phút, không phải chấm công."}
@@ -455,8 +335,8 @@ export default function Personnel({
       {report?.source === "missing" && (
         <div className="info-box">
           Chưa có lịch sử công việc ngày {day}. Hệ thống bắt đầu lưu từ khi
-          triển khai tính năng này; báo cáo tự nhập đã lưu vẫn có thể xem ở tab
-          Báo cáo ngày.
+          triển khai tính năng này; không suy diễn số liệu cho ngày chưa có dữ
+          liệu.
         </div>
       )}
       {report && (
@@ -488,19 +368,15 @@ export default function Personnel({
                 icon: TriangleAlert,
               },
               {
-                label: "Giờ tự báo cáo",
-                value: number(metrics.hours, "h"),
+                label: "Task tăng tiến độ",
+                value: number(movement.improved),
                 tone: "purple",
                 icon: Clock3,
               },
             ].map((k) => (
               <div className={"personnel-kpi " + k.tone} key={k.label}>
                 <k.icon size={20} />
-                <strong>
-                  {report.source === "missing" && k.tone !== "purple"
-                    ? "—"
-                    : k.value}
-                </strong>
+                <strong>{report.source === "missing" ? "—" : k.value}</strong>
                 <span>{k.label}</span>
               </div>
             ))}
@@ -537,11 +413,7 @@ export default function Personnel({
               <div className="personnel-grid">
                 {filtered.map((p) => {
                   const own = tasks.filter((t) => t.assigneeId === p.id),
-                    m = personnelMetrics(
-                      own,
-                      logs.filter((l) => l.memberId === p.id),
-                      day,
-                    );
+                    m = personnelMetrics(own, day);
                   const risk = m.overdue
                     ? "red"
                     : m.blocked
@@ -610,7 +482,16 @@ export default function Personnel({
                           {m.onTimeSample} việc)
                         </span>
                         <span>
-                          Tự báo cáo: <b>{m.hours}h</b>
+                          Task tăng tiến độ:{" "}
+                          <b>
+                            {number(
+                              taskMovement(
+                                own,
+                                previous,
+                                !!report.previousAvailable,
+                              ).improved,
+                            )}
+                          </b>
                         </span>
                       </footer>
                       <p className="personnel-card-note">
@@ -633,8 +514,9 @@ export default function Personnel({
               <p className="section-note">
                 Tiến độ tính theo trọng số công việc được xác nhận; “—” khi chưa
                 có trọng số. Đúng hạn chỉ tính việc hoàn thành trong ngày có đủ
-                ngày hoàn thành và hạn bàn giao. Giờ tự báo cáo là số liệu nhân
-                viên nhập, không phải giờ được đo tự động.
+                ngày hoàn thành và hạn bàn giao. Thay đổi tiến độ so với lần
+                chụp cuối ngày trước; “—” khi thiếu dữ liệu đối chiếu. Giờ dự
+                kiến lấy từ task, không phải giờ làm thực tế.
               </p>
             </>
           )}
@@ -722,138 +604,164 @@ export default function Personnel({
             </section>
           )}
           {tab === "reports" && (
-            <div className="personnel-report-layout">
-              <section className="panel personnel-log-list">
-                <h3>Báo cáo đã gửi · {day}</h3>
-                <p>{logs.length} báo cáo trong bộ lọc hiện tại</p>
-                {!logs.length && (
+            <section className="panel personnel-table-panel">
+              <h3>Báo cáo tự động từ task · {day}</h3>
+              <p className="section-note">
+                Tổng hợp theo bộ lọc phòng ban, team và nhân sự. Tiến độ lấy từ
+                task được xác nhận; số việc hoàn thành và đúng hạn dựa trên ngày
+                hoàn thành quan sát được.
+              </p>
+              {!report.previousAvailable && (
+                <div className="info-box">
+                  Chưa có dữ liệu ngày {report.previousDay} để so sánh. Các chỉ
+                  số thay đổi được để “—”.
+                </div>
+              )}
+              <div className="personnel-table-scroll">
+                <table className="personnel-table">
+                  <thead>
+                    <tr>
+                      <th>Nhân sự / team</th>
+                      <th>Đang mở</th>
+                      <th>Xong trong ngày</th>
+                      <th>Tiến độ</th>
+                      <th>Task tăng tiến độ</th>
+                      <th>Đổi trạng thái</th>
+                      <th>Đúng hạn</th>
+                      <th>Tình trạng</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.map((p) => {
+                      const own = tasks.filter((t) => t.assigneeId === p.id),
+                        m = personnelMetrics(own, day),
+                        delta = taskMovement(
+                          own,
+                          previous,
+                          report.previousAvailable,
+                        );
+                      const label =
+                        report.source === "missing"
+                          ? "Chưa có lịch sử"
+                          : m.overdue
+                            ? `${m.overdue} task quá hạn`
+                            : m.blocked
+                              ? `${m.blocked} task vướng mắc`
+                              : m.open
+                                ? "Đang triển khai"
+                                : "Không có task đang mở";
+                      const tone = m.overdue
+                        ? "overdue"
+                        : m.blocked
+                          ? "blocked"
+                          : "done";
+                      const show = (n: number | null, suffix = "") =>
+                        report.source === "missing" ? "—" : number(n, suffix);
+                      return (
+                        <tr key={p.id}>
+                          <td>
+                            <strong>{p.name}</strong>
+                            <small>
+                              {organizationName(p, "department")} ·{" "}
+                              {organizationName(p, "team")}
+                            </small>
+                          </td>
+                          <td>{show(m.open)}</td>
+                          <td>{show(m.done)}</td>
+                          <td>{show(m.progress, "%")}</td>
+                          <td>{show(delta.improved)}</td>
+                          <td>{show(delta.changed)}</td>
+                          <td>
+                            {show(m.onTime, "%")}
+                            <small>{m.onTimeSample} việc đủ dữ liệu</small>
+                          </td>
+                          <td>
+                            <span className={"personnel-status " + tone}>
+                              {label}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              {!filtered.length && (
+                <div className="info-box">Không có nhân sự phù hợp.</div>
+              )}
+              <h3 className="personnel-priority-heading">
+                Task cần ưu tiên xử lý
+              </h3>
+              <div className="personnel-table-scroll">
+                <table className="personnel-table">
+                  <thead>
+                    <tr>
+                      <th>Công việc</th>
+                      <th>Nhân sự</th>
+                      <th>Vấn đề</th>
+                      <th>Hạn</th>
+                      <th>Vướng mắc</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {tasks
+                      .filter(
+                        (t) =>
+                          !t.archived &&
+                          (isOverdue(t, day) || t.status === "blocked"),
+                      )
+                      .sort((a, b) =>
+                        (a.due || "9999").localeCompare(b.due || "9999"),
+                      )
+                      .map((t) => (
+                        <tr key={t.id}>
+                          <td>
+                            {t.title}
+                            <small>
+                              {
+                                w.projects.find((p) => p.id === t.projectId)
+                                  ?.name
+                              }
+                            </small>
+                          </td>
+                          <td>
+                            {w.people.find((p) => p.id === t.assigneeId)?.name}
+                          </td>
+                          <td>
+                            {isOverdue(t, day) && (
+                              <span className="personnel-status overdue">
+                                Quá hạn
+                              </span>
+                            )}
+                            {t.status === "blocked" && (
+                              <span className="personnel-status blocked">
+                                Vướng mắc
+                              </span>
+                            )}
+                          </td>
+                          <td>{t.due || "Chưa có hạn"}</td>
+                          <td>
+                            {t.blockReason || "Chưa ghi nhận nguyên nhân"}
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+              {!tasks.some(
+                (t) =>
+                  !t.archived && (isOverdue(t, day) || t.status === "blocked"),
+              ) &&
+                report.source !== "missing" && (
                   <div className="info-box">
-                    Chưa có báo cáo tự nhập cho ngày này.
+                    Không có task quá hạn hoặc vướng mắc trong bộ lọc.
                   </div>
                 )}
-                {logs.map((l) => (
-                  <article key={l.memberId + ":" + l.taskId}>
-                    <header>
-                      <b>
-                        {w.people.find((p) => p.id === l.memberId)?.name ||
-                          "Nhân sự"}
-                      </b>
-                      <span>
-                        {l.hours}h · Tự báo cáo {l.progress}%
-                      </span>
-                    </header>
-                    <h4>
-                      {(
-                        report.tasks.find((t) => t.id === l.taskId) ||
-                        w.tasks.find((t) => t.id === l.taskId)
-                      )?.title || "Công việc"}
-                    </h4>
-                    <p>
-                      <b>Đã làm:</b> {l.done}
-                    </p>
-                    {l.plan && (
-                      <p>
-                        <b>Tiếp theo:</b> {l.plan}
-                      </p>
-                    )}
-                    {l.blockers && (
-                      <p className="personnel-blocker">
-                        <b>Vướng mắc:</b> {l.blockers}
-                      </p>
-                    )}
-                  </article>
-                ))}
-              </section>
-              <section className="panel personnel-log-form">
-                <h3>Báo cáo công việc của tôi</h3>
-                <p>
-                  Ghi cho ngày {day}. Chọn cùng công việc và ngày để sửa báo cáo
-                  đã gửi.
-                </p>
-                <form onSubmit={saveLog}>
-                  <label>
-                    Công việc
-                    <select
-                      aria-label="Công việc báo cáo"
-                      required
-                      value={taskId}
-                      onChange={(e) => setTaskId(e.target.value)}
-                    >
-                      <option value="">Chọn việc được giao cho bạn</option>
-                      {ownTasks.map((t) => (
-                        <option key={t.id} value={t.id}>
-                          {t.title}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <div className="personnel-log-numbers">
-                    <label>
-                      Giờ làm thực tế tự báo cáo
-                      <input
-                        aria-label="Giờ làm thực tế tự báo cáo"
-                        type="number"
-                        min="0"
-                        max="24"
-                        step="0.25"
-                        required
-                        value={hours}
-                        onChange={(e) => setHours(e.target.value)}
-                      />
-                    </label>
-                    <label>
-                      Tiến độ tự báo cáo (%)
-                      <input
-                        aria-label="Tiến độ tự báo cáo"
-                        type="number"
-                        min="0"
-                        max="100"
-                        required
-                        value={progress}
-                        onChange={(e) => setProgress(e.target.value)}
-                      />
-                    </label>
-                  </div>
-                  <label>
-                    Đã làm được gì?
-                    <textarea
-                      aria-label="Đã làm được gì"
-                      required
-                      maxLength={2000}
-                      value={done}
-                      onChange={(e) => setDone(e.target.value)}
-                    />
-                  </label>
-                  <label>
-                    Kế hoạch tiếp theo
-                    <textarea
-                      maxLength={2000}
-                      value={plan}
-                      onChange={(e) => setPlan(e.target.value)}
-                    />
-                  </label>
-                  <label>
-                    Vướng mắc / cần hỗ trợ
-                    <textarea
-                      maxLength={2000}
-                      value={blockers}
-                      onChange={(e) => setBlockers(e.target.value)}
-                    />
-                  </label>
-                  <button
-                    className="button primary"
-                    disabled={saving || !taskId}
-                  >
-                    {saving ? "Đang lưu…" : "Lưu báo cáo ngày"}
-                  </button>
-                  {saved && (
-                    <div className="info-box" role="status">
-                      {saved}
-                    </div>
-                  )}
-                </form>
-              </section>
-            </div>
+              <p className="section-note">
+                Báo cáo phản ánh dữ liệu task tại thời điểm đồng bộ. Không quy
+                đổi tiến độ thành giờ làm thực tế hoặc điểm đánh giá nhân sự.
+              </p>
+            </section>
           )}
         </>
       )}
