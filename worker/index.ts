@@ -1,3 +1,4 @@
+import { handlePasswordAuth } from "./password-auth";
 import { ZodError } from "zod";
 import { makeDemo } from "../shared/demo";
 import type {
@@ -30,6 +31,8 @@ import {
 } from "./providers";
 export interface Env {
   DB: D1Database;
+  AUTH_MODE?: "password" | "access";
+  ADMIN_SETUP_TOKEN?: string;
   APP_MODE?: string;
   ADMIN_EMAIL?: string;
   CF_ACCESS_TEAM_DOMAIN?: string;
@@ -111,6 +114,12 @@ export async function handleApi(req: Request, env: Env) {
   const url = new URL(req.url),
     path = url.pathname;
   const demo = env.APP_MODE !== "live";
+  if (
+    path === "/api/auth/status" &&
+    req.method === "GET" &&
+    (demo || env.AUTH_MODE === "access")
+  )
+    return json({ mode: demo ? "demo" : "access" });
   if (demo) {
     if (path === "/api/bootstrap" && req.method === "GET") {
       const workspace = makeDemo();
@@ -128,12 +137,20 @@ export async function handleApi(req: Request, env: Env) {
       "Bản dùng thử chỉ thay đổi dữ liệu mẫu trong trình duyệt.",
     );
   }
-  const user = await identity(req, env);
   if (
     !["GET", "HEAD"].includes(req.method) &&
     req.headers.get("Origin") !== url.origin
   )
     throw new HttpError(403, "Nguồn yêu cầu không hợp lệ.");
+  if (env.AUTH_MODE !== "access" && path.startsWith("/api/auth/")) {
+    const response = await handlePasswordAuth(
+      req,
+      env,
+      ["POST", "PUT"].includes(req.method) ? await body(req) : undefined,
+    );
+    if (response) return response;
+  }
+  const user = await identity(req, env);
   if (path === "/api/bootstrap" && req.method === "GET") {
     const [projects, tasks, people, receipts, terms, documents, settings] =
       await Promise.all([

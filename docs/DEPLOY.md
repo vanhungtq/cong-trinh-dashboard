@@ -32,25 +32,21 @@ npx wrangler deploy
 
 Lần đầu triển khai ở `APP_MODE=demo`. URL thật được Wrangler trả về; không suy đoán URL. Demo không cần Trello, Google hoặc Access.
 
-## 3. Bảo vệ chế độ live bằng Cloudflare Access
+## 3. Đăng nhập email và mật khẩu
 
-1. Gắn hostname/domain của ứng dụng trong Cloudflare Workers.
-2. Trong Cloudflare Zero Trust → Access → Applications, tạo ứng dụng self-hosted cho hostname đó. Cho phép danh sách email công ty; có thể dùng mã đăng nhập một lần gửi email.
-3. Sao chép **Application Audience (AUD)** và team domain dạng `ten-doi.cloudflareaccess.com`.
-4. Điền vào `vars` của Wrangler hoặc dùng biến của workflow:
+Cấu hình mặc định cho dữ liệu thật là `AUTH_MODE=password`. Không cần Cloudflare Access để đăng nhập.
 
-```json
-{
-  "APP_MODE": "live",
-  "CF_ACCESS_TEAM_DOMAIN": "ten-doi.cloudflareaccess.com",
-  "CF_ACCESS_AUD": "application-audience",
-  "ADMIN_EMAIL": "email-quan-tri-cua-ban@example.com"
-}
-```
+1. Giữ `ADMIN_EMAIL` là email chủ hệ thống (nếu đã có tài khoản admin cũ, dùng đúng email để giữ liên kết dữ liệu). Đặt `APP_MODE=live`, `AUTH_MODE=password` trong `vars` của `wrangler.jsonc`.
+2. Trong **Cloudflare Worker → Settings → Variables and Secrets**, tạo secret **ADMIN_SETUP_TOKEN** là chuỗi ngẫu nhiên ít nhất 24 ký tự. Có thể tạo trên máy của bạn bằng `openssl rand -hex 24`. Không commit hoặc gửi mã khởi tạo qua chat.
+3. Deploy với lệnh `npx wrangler d1 migrations apply DB --remote && npx wrangler deploy`. Migration `0004_password_auth.sql` thêm bảng xác thực, không xóa dữ liệu cũ.
+4. Nếu đã bật Cloudflare Access cho hostname/Worker, tắt lớp bảo vệ Access của riêng Dashboard sau khi deploy thành công. Với workers.dev, kiểm tra Worker → Settings → Domains & Routes → workers.dev → Cloudflare Access; nếu có Access application cho hostname này, gỡ cấu hình bảo vệ ứng dụng đó trong Zero Trust. Không xóa các ứng dụng Access khác. Việc đổi AUTH_MODE trong code không tự tắt Access bên ngoài Worker.
+5. Mở Dashboard. Ở màn **Tạo tài khoản quản trị**, nhập đúng `ADMIN_EMAIL`, họ tên, mật khẩu ít nhất 12 ký tự và mã `ADMIN_SETUP_TOKEN`. Khởi tạo chỉ thành công một lần; người không có mã không thể tự đăng ký admin. Tài khoản admin cũ cùng email được tái sử dụng.
+6. Sau khi khởi tạo, có thể xóa secret `ADMIN_SETUP_TOKEN`. Các lần sau chỉ nhập email/mật khẩu để đăng nhập.
+7. Thêm nhân sự tại **Nhân sự**, rồi vào **Kết nối & cài đặt → Tài khoản & mật khẩu** để cấp mật khẩu riêng. Gửi mật khẩu qua kênh riêng; nhân sự có thể đổi mật khẩu sau đăng nhập. Admin đặt lại mật khẩu sẽ thu hồi các phiên cũ của nhân sự đó.
 
-5. Deploy lại. Admin email đầu tiên được thêm vào D1 sau khi JWT hợp lệ. Thêm các nhân sự còn lại ở màn Nhân sự.
+Mật khẩu được băm PBKDF2-SHA256 với salt ngẫu nhiên, không lưu mật khẩu gốc. Phiên đăng nhập có hạn 8 giờ, dùng cookie Secure/HttpOnly/SameSite; mã phiên chỉ lưu bản băm trong D1. Có giới hạn số lần thử đăng nhập và kiểm tra Origin cho yêu cầu ghi. Không có đăng ký công khai hoặc gửi email khôi phục tự động. Quên mật khẩu admin cần chủ hệ thống khôi phục có kiểm soát trong D1; không mở lại bước tạo admin bằng cách xóa dữ liệu.
 
-Worker kiểm tra chữ ký JWT, issuer và audience bằng JWKS chính thức của Cloudflare; không tin email header tự gửi. API live không trả dữ liệu nếu thiếu cấu hình hoặc đăng nhập. Đường dẫn workers.dev không được Access bảo vệ sẽ nhận 401 ở API; dùng hostname đã cấu hình Access. Có thể tắt workers.dev sau khi custom domain hoạt động.
+Nếu muốn tiếp tục dùng Access, đặt `AUTH_MODE=access` và cấu hình `CF_ACCESS_TEAM_DOMAIN`, `CF_ACCESS_AUD`, `ADMIN_EMAIL` như trước. Không dùng màn đăng nhập mật khẩu trong chế độ này.
 
 ## 4. Trello
 
@@ -103,12 +99,12 @@ Trong repo → Settings → Secrets and variables → Actions:
 
 **Variables**
 
-| Tên                   | Nội dung               |
-| --------------------- | ---------------------- |
-| D1_DATABASE_ID        | ID D1 đã tạo           |
-| CF_ACCESS_TEAM_DOMAIN | Team domain của Access |
-| CF_ACCESS_AUD         | Audience của Access    |
-| ADMIN_EMAIL           | Email quản trị         |
+| Tên                   | Nội dung                           |
+| --------------------- | ---------------------------------- |
+| D1_DATABASE_ID        | ID D1 đã tạo                       |
+| CF_ACCESS_TEAM_DOMAIN | Team domain (chỉ AUTH_MODE=access) |
+| CF_ACCESS_AUD         | Audience (chỉ AUTH_MODE=access)    |
+| ADMIN_EMAIL           | Email quản trị                     |
 
 Tạo environment `production` nếu cần quy tắc phê duyệt nội bộ. Chọn Actions → **Deploy to Cloudflare** → Run workflow → `demo` hoặc `live`. Workflow kiểm thử, chuẩn bị cấu hình, build, áp dụng migrations, đưa secrets vào Worker và deploy. Workflow `Check dashboard` tự chạy trên push/PR.
 

@@ -25,6 +25,8 @@ jobs:
       CF_ACCESS_AUD: ${{ vars.CF_ACCESS_AUD }}
       ADMIN_EMAIL: ${{ vars.ADMIN_EMAIL }}
       APP_MODE: ${{ inputs.mode }}
+      AUTH_MODE: ${{ vars.AUTH_MODE }}
+      ADMIN_SETUP_TOKEN: ${{ secrets.ADMIN_SETUP_TOKEN }}
       TRELLO_API_KEY: ${{ secrets.TRELLO_API_KEY }}
       TRELLO_TOKEN: ${{ secrets.TRELLO_TOKEN }}
       GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}

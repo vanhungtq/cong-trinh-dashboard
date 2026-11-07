@@ -1,5 +1,6 @@
 import { createRemoteJWKSet, jwtVerify } from "jose";
 import type { Person } from "../shared/types";
+import { passwordIdentity } from "./password-auth";
 import type { Env } from "./index";
 const jwks = new Map<string, ReturnType<typeof createRemoteJWKSet>>();
 export class HttpError extends Error {
@@ -15,6 +16,7 @@ export function roleAllowed(user: Person, roles: Person["role"][]) {
     throw new HttpError(403, "Bạn không có quyền thực hiện thao tác này.");
 }
 export async function identity(request: Request, env: Env): Promise<Person> {
+  if (env.AUTH_MODE !== "access") return passwordIdentity(request, env);
   if (
     !env.DB ||
     !env.CF_ACCESS_TEAM_DOMAIN ||

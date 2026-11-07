@@ -1,6 +1,9 @@
 # Never commit .dev.vars or actual secret values. Demo needs no secrets.
 APP_MODE=demo
-# Live mode requires Cloudflare Access JWT validation AND an allowed D1 member.
+# Live uses email/password sessions by default.
+# AUTH_MODE=password
+# ADMIN_SETUP_TOKEN= (random 24+ characters, setup only)
+# For optional Access authentication set AUTH_MODE=access.
 # CF_ACCESS_TEAM_DOMAIN=your-team.cloudflareaccess.com
 # CF_ACCESS_AUD=your-application-audience
 # ADMIN_EMAIL=owner@example.com

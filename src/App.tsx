@@ -1,3 +1,4 @@
+import { Login, AccountSettings } from "./auth-ui";
 import { useEffect, useMemo, useState } from "react";
 import {
   Activity,
@@ -148,7 +149,9 @@ function Architecture({ variant = 0 }: { variant?: number }) {
 export default function App() {
   const [w, setW] = useState<Workspace | null>(null),
     [session, setSession] = useState<Session | null>(null),
-    [loadError, setLoadError] = useState("");
+    [loadError, setLoadError] = useState(""),
+    [authRequired, setAuthRequired] = useState(false),
+    [authMode, setAuthMode] = useState("password");
   const [page, setPage] = useState<Page>("overview"),
     [search, setSearch] = useState(""),
     [statusFilter, setStatusFilter] = useState("all"),
@@ -196,15 +199,29 @@ export default function App() {
     nextPageToken?: string;
   } | null>(null);
   useEffect(() => {
-    bootstrap()
-      .then((d) => {
-        setW(d.workspace);
-        setSession(d.session);
-        setCompany(d.workspace.settings.companyName);
-        setMapping(d.workspace.settings.listMapping);
-        setTrelloWorkspaceId(d.workspace.settings.trelloWorkspaceId || "");
-      })
-      .catch((e) => setLoadError(e.message));
+    const expired = () => {
+      setW(null);
+      setSession(null);
+      setAuthRequired(true);
+    };
+    window.addEventListener("cong-trinh-auth-required", expired);
+    (async () => {
+      const status = import.meta.env.DEV
+        ? { mode: "demo" }
+        : await request<{ mode: string }>("/auth/status");
+      setAuthMode(status.mode);
+      const d = await bootstrap();
+      setW(d.workspace);
+      setSession(d.session);
+      setCompany(d.workspace.settings.companyName);
+      setMapping(d.workspace.settings.listMapping);
+      setTrelloWorkspaceId(d.workspace.settings.trelloWorkspaceId || "");
+    })().catch((e) => {
+      if (e instanceof ApiError && e.kind === "auth") setAuthRequired(true);
+      else setLoadError(e.message);
+    });
+    return () =>
+      window.removeEventListener("cong-trinh-auth-required", expired);
   }, []);
   useEffect(() => {
     if (toast) {
@@ -404,6 +421,7 @@ export default function App() {
       ) || [],
     [w, search, statusFilter],
   );
+  if (authRequired && authMode === "password") return <Login />;
   if (!w || !session)
     return (
       <div className="loading-screen">
@@ -673,6 +691,27 @@ export default function App() {
             <CircleHelp size={19} />
             <span>Hướng dẫn sử dụng</span>
           </button>
+          {session.mode === "live" && authMode === "password" && (
+            <button
+              className="nav-item"
+              disabled={busy}
+              onClick={async () => {
+                setBusy(true);
+                try {
+                  await request("/auth/logout", "POST", {});
+                  setW(null);
+                  setSession(null);
+                  setAuthRequired(true);
+                } catch (e) {
+                  setToast((e as Error).message);
+                } finally {
+                  setBusy(false);
+                }
+              }}
+            >
+              Đăng xuất
+            </button>
+          )}
           <div className="sidebar-user">
             <Avatar person={session.user} size={36} />
             <div>
@@ -2066,6 +2105,9 @@ export default function App() {
                   </button>
                 )}
               </section>
+              {session.mode === "live" && authMode === "password" && (
+                <AccountSettings people={w.people} user={session.user} />
+              )}
               <section className="panel settings-card">
                 <div className="panel-heading no-pad">
                   <div>
@@ -2084,7 +2126,7 @@ export default function App() {
                       <b>Triển khai trên Cloudflare</b>
                       <p>
                         Tạo cơ sở dữ liệu D1, chạy migrations và deploy Worker.
-                        Thiết lập đăng nhập Cloudflare Access.
+                        Thiết lập tài khoản quản trị và mật khẩu.
                       </p>
                     </div>
                   </li>

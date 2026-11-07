@@ -6,6 +6,7 @@ const deployment = spawnSync("npx", ["wrangler", "deploy"], {
 if (deployment.status !== 0) process.exit(deployment.status || 1);
 const secrets = {};
 for (const key of [
+  "ADMIN_SETUP_TOKEN",
   "TRELLO_API_KEY",
   "TRELLO_TOKEN",
   "GOOGLE_CLIENT_ID",

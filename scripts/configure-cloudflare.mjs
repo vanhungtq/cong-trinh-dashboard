@@ -12,10 +12,20 @@ const mode = process.env.APP_MODE || "demo";
 if (!["demo", "live"].includes(mode))
   throw Error("APP_MODE must be demo or live.");
 c.vars.APP_MODE = mode;
-if (mode === "live")
-  for (const key of ["CF_ACCESS_TEAM_DOMAIN", "CF_ACCESS_AUD", "ADMIN_EMAIL"]) {
-    if (!process.env[key]) throw Error("Missing " + key);
-    c.vars[key] = process.env[key];
+const authMode = process.env.AUTH_MODE || c.vars.AUTH_MODE || "password";
+if (!["password", "access"].includes(authMode))
+  throw Error("AUTH_MODE must be password or access.");
+c.vars.AUTH_MODE = authMode;
+if (mode === "live") {
+  const keys =
+    authMode === "access"
+      ? ["CF_ACCESS_TEAM_DOMAIN", "CF_ACCESS_AUD", "ADMIN_EMAIL"]
+      : ["ADMIN_EMAIL"];
+  for (const key of keys) {
+    const value = process.env[key] || c.vars[key];
+    if (!value) throw Error("Missing " + key);
+    c.vars[key] = value;
   }
+}
 await writeFile("wrangler.jsonc", JSON.stringify(c, null, 2) + "\n");
 console.log("Cloudflare configuration prepared for " + mode + " mode.");

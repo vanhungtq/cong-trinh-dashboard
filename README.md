@@ -5,11 +5,11 @@ Dashboard tiếng Việt cho công ty tư vấn thiết kế xây dựng: dự �
 **Hai chế độ tách biệt:**
 
 - `demo`: dữ liệu giả lập, dùng ngay không cần tài khoản dịch vụ. Các thay đổi lưu trong localStorage của trình duyệt; không phải dữ liệu công ty, không đồng bộ giữa thiết bị. Có nút khôi phục demo.
-- `live`: dữ liệu thật trong Cloudflare D1. API bắt buộc JWT Cloudflare Access hợp lệ và thành viên đã được quản trị thêm. Không tự quay về dữ liệu mẫu khi API thật bị lỗi.
+- `live`: dữ liệu thật trong Cloudflare D1. API yêu cầu phiên đăng nhập email/mật khẩu hợp lệ và thành viên đã được quản trị thêm. Có thể dùng Cloudflare Access khi đặt AUTH_MODE=access. Không tự quay về dữ liệu mẫu khi API thật bị lỗi.
 
 ## Công nghệ
 
-React 19 + TypeScript + Vite; Cloudflare Worker ES module; Cloudflare D1; Cloudflare Access; Trello REST API; Google Drive API. Build đóng gói cả frontend vào Worker, một lần deploy, không cần máy chủ Node.js riêng. Không dùng dịch vụ AI trả phí khi vận hành dashboard.
+React 19 + TypeScript + Vite; Cloudflare Worker ES module; Cloudflare D1; đăng nhập email/mật khẩu; Trello REST API; Google Drive API. Build đóng gói cả frontend vào Worker, một lần deploy, không cần máy chủ Node.js riêng. Không dùng dịch vụ AI trả phí khi vận hành dashboard.
 
 ## Chạy thử
 
@@ -69,7 +69,7 @@ Danh sách nhân sự chỉ trả email/Trello ID cho admin. Staff không nhận
 
 ## Triển khai lên Cloudflare
 
-Xem hướng dẫn đầy đủ tại [docs/DEPLOY.md](docs/DEPLOY.md). Repo đã có workflow kiểm thử và workflow **Deploy to Cloudflare** chạy thủ công.
+Xem hướng dẫn đầy đủ tại [docs/DEPLOY.md](docs/DEPLOY.md). Đăng nhập trực tiếp dùng `AUTH_MODE=password`, khởi tạo admin bằng secret `ADMIN_SETUP_TOKEN` và email `ADMIN_EMAIL`; xem mục 3 của hướng dẫn deploy. Repo đã có workflow kiểm thử và workflow **Deploy to Cloudflare** chạy thủ công.
 
 Không commit `.dev.vars`, `.env`, token Trello, token Google hay Cloudflare API token. `.dev.vars.example` chỉ ghi tên biến. `wrangler.jsonc` đang dùng ID D1 minh họa, cần thay bằng ID thật.
 

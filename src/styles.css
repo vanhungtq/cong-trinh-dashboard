@@ -2923,3 +2923,72 @@ h1 {
 .trello-board-target {
   margin-bottom: 14px;
 }
+.auth-screen {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: #f5f7f2;
+}
+.auth-card {
+  width: 100%;
+  max-width: 430px;
+  padding: 32px;
+  background: white;
+  border: 1px solid #dce4d7;
+  border-radius: 16px;
+}
+.auth-card h1 {
+  margin: 12px 0 24px;
+}
+.auth-card h2 {
+  margin-bottom: 12px;
+}
+.auth-card p,
+.auth-card small,
+.account-settings p {
+  color: #677b63;
+  line-height: 1.6;
+}
+.auth-card form,
+.account-settings form {
+  display: grid;
+  gap: 16px;
+  margin: 24px 0;
+}
+.auth-card label,
+.account-settings label {
+  display: grid;
+  gap: 8px;
+  font-size: 13px;
+}
+.auth-card input,
+.account-settings input,
+.account-settings select {
+  width: 100%;
+  min-width: 0;
+}
+.account-settings form {
+  max-width: 520px;
+}
+.account-settings form + form {
+  padding-top: 24px;
+  border-top: 1px solid #dce4d7;
+}
+.auth-card input,
+.account-settings input,
+.account-settings select {
+  min-height: 44px;
+  padding: 11px 12px;
+  border: 1px solid #d3dfcb;
+  border-radius: 7px;
+  background: #fcfdfb;
+  color: #293d32;
+  font: inherit;
+}
+.auth-card input:focus,
+.account-settings input:focus,
+.account-settings select:focus {
+  outline: 2px solid #93b077;
+  outline-offset: 2px;
+}

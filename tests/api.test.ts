@@ -1,59 +1,9 @@
+import { database } from "./database";
 import test from "node:test";
 import assert from "node:assert/strict";
-import { DatabaseSync } from "node:sqlite";
-import { readFileSync } from "node:fs";
 import { generateKeyPair, exportJWK, SignJWT } from "jose";
 import worker, { type Env } from "../worker/index";
 import { makeDemo } from "../shared/demo";
-function database() {
-  const sql = new DatabaseSync(":memory:");
-  for (const file of [
-    "0001_initial.sql",
-    "0002_payment_cap.sql",
-    "0003_receipt_reference.sql",
-  ])
-    sql.exec(
-      readFileSync(new URL("../migrations/" + file, import.meta.url), "utf8"),
-    );
-  class Statement {
-    values: unknown[] = [];
-    constructor(public query: string) {}
-    bind(...v: unknown[]) {
-      this.values = v;
-      return this;
-    }
-    async first() {
-      return sql.prepare(this.query).get(...(this.values as any[])) || null;
-    }
-    async all() {
-      return {
-        results: sql.prepare(this.query).all(...(this.values as any[])),
-      };
-    }
-    async run() {
-      const r = sql.prepare(this.query).run(...(this.values as any[]));
-      return { meta: { changes: Number(r.changes) }, success: true };
-    }
-  }
-  return {
-    sql,
-    binding: {
-      prepare: (s: string) => new Statement(s),
-      batch: async (s: Statement[]) => {
-        sql.exec("BEGIN");
-        try {
-          const out = [];
-          for (const item of s) out.push(await item.run());
-          sql.exec("COMMIT");
-          return out;
-        } catch (e) {
-          sql.exec("ROLLBACK");
-          throw e;
-        }
-      },
-    } as unknown as D1Database,
-  };
-}
 const origin = "https://dashboard.example.com";
 test("demo API is explicit and does not accept server writes", async () => {
   const r = await worker.fetch(
@@ -78,12 +28,14 @@ test("live mode fails closed without configuration or valid JWT", async () => {
     (
       await worker.fetch(new Request(origin + "/api/bootstrap"), {
         APP_MODE: "live",
+        AUTH_MODE: "access" as const,
       } as Env)
     ).status,
     503,
   );
   const env = {
     APP_MODE: "live",
+    AUTH_MODE: "access" as const,
     DB: {} as D1Database,
     CF_ACCESS_TEAM_DOMAIN: "test-team.cloudflareaccess.com",
     CF_ACCESS_AUD: "aud",
@@ -172,6 +124,7 @@ test("live API validates identity, enforces roles, project scope and transaction
   const env: Env = {
     DB: binding,
     APP_MODE: "live",
+    AUTH_MODE: "access" as const,
     CF_ACCESS_TEAM_DOMAIN: "api-test.cloudflareaccess.com",
     CF_ACCESS_AUD: "aud",
     ADMIN_EMAIL: "owner@example.com",

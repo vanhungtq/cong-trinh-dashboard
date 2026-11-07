@@ -31,20 +31,21 @@ export async function request<T>(
     });
   } catch {
     throw new ApiError(
-      "Không gửi được yêu cầu tới Dashboard. Kiểm tra kết nối mạng; tải lại Dashboard để kiểm tra phiên đăng nhập Cloudflare Access rồi thử lại.",
+      "Không gửi được yêu cầu tới Dashboard. Kiểm tra kết nối mạng; tải lại Dashboard để kiểm tra phiên đăng nhập rồi thử lại.",
       "network",
     );
   }
-  if (
-    r.type === "opaqueredirect" ||
-    (r.status >= 300 && r.status < 400) ||
-    r.status === 401
-  )
+  if (r.type === "opaqueredirect" || (r.status >= 300 && r.status < 400))
     throw new ApiError(
       "Phiên đăng nhập chưa hợp lệ hoặc đã hết hạn. Mở lại Dashboard để đăng nhập Cloudflare Access, sau đó thử lại.",
       "auth",
     );
   if (!r.headers.get("content-type")?.includes("application/json")) {
+    if (r.status === 401)
+      throw new ApiError(
+        "Vui lòng đăng nhập lại qua Cloudflare Access.",
+        "auth",
+      );
     if (r.status === 403)
       throw new ApiError(
         "Cloudflare từ chối yêu cầu. Mở lại Dashboard để đăng nhập; nếu vẫn lỗi, kiểm tra policy Access và quy tắc bảo vệ Cloudflare.",
@@ -56,6 +57,11 @@ export async function request<T>(
     );
   }
   const result = (await r.json()) as T & { error?: string };
+  if (r.status === 401) {
+    if (!path.startsWith("/auth/") && typeof window !== "undefined")
+      window.dispatchEvent(new Event("cong-trinh-auth-required"));
+    throw new ApiError(result.error || "Vui lòng đăng nhập lại.", "auth");
+  }
   if (!r.ok) throw new ApiError(result.error || "Yêu cầu thất bại.", "server");
   return result;
 }
