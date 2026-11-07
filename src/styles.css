@@ -2896,3 +2896,30 @@ h1 {
 .kpi.dark .kpi-note {
   color: #b3c4a7;
 }
+
+.trello-workspace-controls {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 18px 0;
+}
+.trello-workspace-controls > div {
+  flex: 1;
+  min-width: 220px;
+}
+.trello-import-actions {
+  margin: 20px 0;
+}
+.trello-import-actions > button {
+  margin: 0 12px 12px 0;
+}
+.trello-import-actions p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+  margin-bottom: 14px;
+}
+.trello-board-target {
+  margin-bottom: 14px;
+}

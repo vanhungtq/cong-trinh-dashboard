@@ -14,6 +14,7 @@ import {
   projectSchema,
   receiptSchema,
   settingsSchema,
+  trelloImportSchema,
   taskSchema,
   termSchema,
 } from "./validation";
@@ -23,6 +24,9 @@ import {
   setSettings,
   syncTrello,
   trello,
+  trelloWorkspaces,
+  trelloBoards,
+  importTrelloBoards,
 } from "./providers";
 export interface Env {
   DB: D1Database;
@@ -361,8 +365,15 @@ export async function handleApi(req: Request, env: Env) {
     await setSettings(env, { ...(await getSettings(env)), ...data });
     return json({ ok: true });
   }
+  if (path === "/api/trello/workspaces" && req.method === "GET") {
+    roleAllowed(user, ["admin"]);
+    return json(await trelloWorkspaces(env));
+  }
   if (path === "/api/trello/boards" && req.method === "GET") {
     roleAllowed(user, ["admin"]);
+    const workspaceId = url.searchParams.get("workspaceId");
+    if (workspaceId) return json(await trelloBoards(env, workspaceId));
+    // Retain the existing endpoint for clients deployed before Workspace selection.
     return json(
       await trello(env, "members/me/boards", {
         filter: "open",
@@ -370,6 +381,16 @@ export async function handleApi(req: Request, env: Env) {
         lists: "open",
         list_fields: "name",
       }),
+    );
+  }
+  if (path === "/api/trello/import" && req.method === "POST") {
+    roleAllowed(user, ["admin"]);
+    return json(
+      await importTrelloBoards(
+        env,
+        user,
+        trelloImportSchema.parse(await body(req)),
+      ),
     );
   }
   if (path === "/api/trello/sync" && req.method === "POST") {

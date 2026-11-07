@@ -132,6 +132,40 @@ test("live API validates identity, enforces roles, project scope and transaction
   globalThis.fetch = async (input: any) => {
     if (String(input).includes("/cdn-cgi/access/certs"))
       return Response.json({ keys: [jwk] });
+    const url = new URL(String(input));
+    if (url.hostname === "api.trello.com") {
+      if (url.pathname === "/1/members/me/organizations")
+        return Response.json([
+          { id: "a".repeat(24), name: "demo", displayName: "Demo" },
+        ]);
+      if (url.pathname === "/1/organizations/" + "a".repeat(24) + "/boards")
+        return Response.json([
+          {
+            id: "b".repeat(24),
+            name: "Nhà phố demo",
+            url: "https://trello.com/b/demo1234",
+            lists: [{ id: "c".repeat(24), name: "Đang thực hiện" }],
+          },
+          {
+            id: "d".repeat(24),
+            name: "Biệt thự demo",
+            url: "https://trello.com/b/demo5678",
+            lists: [{ id: "e".repeat(24), name: "Hoàn thành" }],
+          },
+        ]);
+      if (url.pathname === "/1/boards/" + "b".repeat(24) + "/cards")
+        return Response.json([
+          {
+            id: "f".repeat(24),
+            name: "Khảo sát",
+            idList: "c".repeat(24),
+            idMembers: [],
+            due: null,
+            url: "https://trello.com/c/demo1234",
+            closed: false,
+          },
+        ]);
+    }
     throw Error("Unexpected external request");
   };
   const issuer = "https://api-test.cloudflareaccess.com";
@@ -257,6 +291,184 @@ test("live API validates identity, enforces roles, project scope and transaction
     assert.equal(
       (sql.prepare("SELECT count(*) AS n FROM audit_log").get() as any).n,
       1,
+    );
+    env.TRELLO_API_KEY = "test-key";
+    env.TRELLO_TOKEN = "test-token";
+    const workspaceId = "a".repeat(24),
+      boardId = "b".repeat(24),
+      listId = "c".repeat(24);
+    const importData = {
+      workspaceId,
+      targets: [{ boardId }],
+      listMapping: { [listId]: "doing" },
+      start: "2026-11-07",
+      due: "2026-12-07",
+    };
+    assert.equal(
+      (await call("nam@example.com", "/trello/workspaces")).status,
+      403,
+    );
+    assert.equal(
+      (await call("nam@example.com", "/trello/import", "POST", importData))
+        .status,
+      403,
+    );
+    assert.equal(
+      (await call("hung@example.com", "/trello/workspaces")).status,
+      200,
+    );
+    assert.equal(
+      (
+        await call(
+          "hung@example.com",
+          "/trello/boards?workspaceId=" + workspaceId,
+        )
+      ).status,
+      200,
+    );
+    assert.equal(
+      (await call("hung@example.com", "/trello/boards?workspaceId=invalid"))
+        .status,
+      400,
+    );
+    assert.equal(
+      (
+        await call(
+          "hung@example.com",
+          "/trello/boards?workspaceId=" + "0".repeat(24),
+        )
+      ).status,
+      403,
+    );
+    const initialProjects = (
+      sql.prepare("SELECT count(*) AS n FROM projects").get() as any
+    ).n;
+    const imported = await call(
+      "hung@example.com",
+      "/trello/import",
+      "POST",
+      importData,
+    );
+    assert.equal(imported.status, 200);
+    assert.deepEqual(await imported.json(), {
+      created: 1,
+      linked: 0,
+      existing: 0,
+    });
+    assert.deepEqual(
+      await (
+        await call("hung@example.com", "/trello/import", "POST", importData)
+      ).json(),
+      { created: 0, linked: 0, existing: 1 },
+    );
+    assert.equal(
+      (sql.prepare("SELECT count(*) AS n FROM projects").get() as any).n,
+      initialProjects + 1,
+    );
+    const project = JSON.parse(
+      (
+        sql
+          .prepare("SELECT data FROM projects WHERE id=?")
+          .get("trello-board-" + boardId) as any
+      ).data,
+    );
+    assert.equal(project.managerId, "hung");
+    assert.equal(project.contract, 0);
+    assert.equal(project.name, "Nhà phố demo");
+    // Every selected board is validated before any D1 write.
+    const invalid = await call("hung@example.com", "/trello/import", "POST", {
+      ...importData,
+      targets: [{ boardId: "d".repeat(24) }, { boardId: "0".repeat(24) }],
+      listMapping: { ["e".repeat(24)]: "done" },
+    });
+    assert.equal(invalid.status, 400);
+    assert.equal(
+      (sql.prepare("SELECT count(*) AS n FROM projects").get() as any).n,
+      initialProjects + 1,
+    );
+    assert.equal(
+      (
+        await call("hung@example.com", "/trello/import", "POST", {
+          ...importData,
+          listMapping: {},
+        })
+      ).status,
+      400,
+    );
+    assert.equal(
+      (
+        await call("hung@example.com", "/trello/import", "POST", {
+          ...importData,
+          targets: [{ boardId }, { boardId }],
+        })
+      ).status,
+      400,
+    );
+    assert.equal(
+      (
+        await call("hung@example.com", "/trello/import", "POST", {
+          ...importData,
+          targets: [{ boardId, projectId: "p1" }],
+        })
+      ).status,
+      409,
+    );
+    // Isolate the new project's task sync from the existing demo fixtures.
+    sql
+      .prepare(
+        "UPDATE projects SET data=json_set(data,'$.boardId','') WHERE id != ?",
+      )
+      .run(project.id);
+    const synced = await call("hung@example.com", "/trello/sync", "POST", {});
+    assert.equal(synced.status, 200);
+    assert.deepEqual(await synced.json(), { count: 1, projects: 1 });
+    assert.equal(
+      (
+        sql
+          .prepare("SELECT project_id FROM tasks WHERE id=?")
+          .get("trello-" + "f".repeat(24)) as any
+      ).project_id,
+      project.id,
+    );
+    const before = JSON.parse(
+      (sql.prepare("SELECT data FROM projects WHERE id='p1'").get() as any)
+        .data,
+    );
+    const linked = await call("hung@example.com", "/trello/import", "POST", {
+      ...importData,
+      targets: [{ boardId: "d".repeat(24), projectId: "p1" }],
+      listMapping: { ["e".repeat(24)]: "done" },
+    });
+    assert.equal(linked.status, 200);
+    assert.deepEqual(await linked.json(), {
+      created: 0,
+      linked: 1,
+      existing: 0,
+    });
+    const after = JSON.parse(
+      (sql.prepare("SELECT data FROM projects WHERE id='p1'").get() as any)
+        .data,
+    );
+    assert.equal(after.contract, before.contract);
+    assert.equal(after.name, before.name);
+    assert.equal(after.boardId, "d".repeat(24));
+    const settings = JSON.parse(
+      (
+        sql
+          .prepare("SELECT data FROM settings WHERE id='workspace'")
+          .get() as any
+      ).data,
+    );
+    assert.equal(settings.trelloWorkspaceId, workspaceId);
+    assert.equal(settings.listMapping[listId], "doing");
+    assert.equal(settings.listMapping["e".repeat(24)], "done");
+    sql
+      .prepare("INSERT INTO sync_lock VALUES (?,?)")
+      .run("trello", Date.now() + 60000);
+    assert.equal(
+      (await call("hung@example.com", "/trello/import", "POST", importData))
+        .status,
+      409,
     );
   } finally {
     globalThis.fetch = previous;

@@ -46,6 +46,7 @@ import type {
   Project,
   Task,
   TaskStatus,
+  TrelloWorkspace,
 } from "../shared/types";
 import { roleLabels, taskLabels } from "../shared/types";
 import {
@@ -174,6 +175,11 @@ export default function App() {
         lists: { id: string; name: string }[];
       }>
     >([]),
+    [trelloWorkspaces, setTrelloWorkspaces] = useState<TrelloWorkspace[]>([]),
+    [trelloWorkspaceId, setTrelloWorkspaceId] = useState(""),
+    [boardTargets, setBoardTargets] = useState<Record<string, string>>({}),
+    [importStart, setImportStart] = useState(""),
+    [importDue, setImportDue] = useState(""),
     [mapping, setMapping] = useState<Record<string, TaskStatus>>({}),
     [company, setCompany] = useState(""),
     [settingsError, setSettingsError] = useState("");
@@ -195,6 +201,7 @@ export default function App() {
         setSession(d.session);
         setCompany(d.workspace.settings.companyName);
         setMapping(d.workspace.settings.listMapping);
+        setTrelloWorkspaceId(d.workspace.settings.trelloWorkspaceId || "");
       })
       .catch((e) => setLoadError(e.message));
   }, []);
@@ -1666,26 +1673,22 @@ export default function App() {
                 </Field>
                 <div className="settings-subhead">
                   <div>
-                    <h3>Ánh xạ cột Trello</h3>
+                    <h3>Chọn Workspace Trello</h3>
                     <p>
-                      Chỉ ánh xạ “Hoàn thành” với cột đã qua kiểm tra. Gắn Board
-                      ID trong thông tin dự án.
+                      Chọn Workspace, tải các bảng rồi chọn bảng muốn đưa vào
+                      Dashboard. Mỗi bảng tương ứng một dự án.
                     </p>
                   </div>
                   <button
                     className="button small"
-                    disabled={!admin || busy}
+                    disabled={!admin || busy || session.mode === "demo"}
                     onClick={async () => {
-                      if (session.mode === "demo") {
-                        setToast(
-                          "Cần cấu hình khóa Trello trong chế độ dữ liệu thật.",
-                        );
-                        return;
-                      }
                       setBusy(true);
                       setSettingsError("");
                       try {
-                        setBoards(await request("/trello/boards"));
+                        setTrelloWorkspaces(
+                          await request("/trello/workspaces"),
+                        );
                       } catch (e) {
                         setSettingsError((e as Error).message);
                       } finally {
@@ -1694,48 +1697,299 @@ export default function App() {
                     }}
                   >
                     <RefreshCw size={15} />
-                    Tải danh sách bảng
+                    Tải Workspace
                   </button>
                 </div>
+                {session.mode === "demo" && (
+                  <div className="info-box">
+                    Chọn Workspace và đồng bộ Trello cần chế độ dữ liệu thật
+                    cùng khóa Trello trên Cloudflare.
+                  </div>
+                )}
+                {session.mode === "live" && !session.integrations.trello && (
+                  <div className="form-error">
+                    Thêm TRELLO_API_KEY và TRELLO_TOKEN tại Cloudflare Worker →
+                    Settings → Variables and Secrets, sau đó tải lại trang.
+                  </div>
+                )}
+                <div className="trello-workspace-controls">
+                  <Field label="Workspace Trello">
+                    <select
+                      value={trelloWorkspaceId}
+                      disabled={!admin || busy || !trelloWorkspaces.length}
+                      onChange={(e) => {
+                        setTrelloWorkspaceId(e.target.value);
+                        setBoards([]);
+                        setBoardTargets({});
+                        setSettingsError("");
+                      }}
+                    >
+                      <option value="">Chọn Workspace</option>
+                      {!trelloWorkspaces.some(
+                        (x) => x.id === trelloWorkspaceId,
+                      ) &&
+                        trelloWorkspaceId && (
+                          <option value={trelloWorkspaceId}>
+                            Workspace đã lưu — tải danh sách để xem tên
+                          </option>
+                        )}
+                      {trelloWorkspaces.map((x) => (
+                        <option key={x.id} value={x.id}>
+                          {x.displayName}
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
+                  <button
+                    className="button small"
+                    disabled={
+                      !admin ||
+                      busy ||
+                      !trelloWorkspaceId ||
+                      session.mode === "demo"
+                    }
+                    onClick={async () => {
+                      setBusy(true);
+                      setSettingsError("");
+                      setBoards([]);
+                      setBoardTargets({});
+                      try {
+                        const loaded = await request<typeof boards>(
+                          "/trello/boards?workspaceId=" +
+                            encodeURIComponent(trelloWorkspaceId),
+                        );
+                        setBoards(loaded);
+                        setBoardTargets(
+                          Object.fromEntries(
+                            loaded.map((b) => [
+                              b.id,
+                              w.projects.find((p) => p.boardId === b.id)?.id ||
+                                "",
+                            ]),
+                          ),
+                        );
+                        if (!loaded.length)
+                          setSettingsError(
+                            "Workspace này chưa có bảng đang mở mà tài khoản Trello có thể đọc.",
+                          );
+                      } catch (e) {
+                        setSettingsError((e as Error).message);
+                      } finally {
+                        setBusy(false);
+                      }
+                    }}
+                  >
+                    <RefreshCw size={15} />
+                    Tải bảng trong Workspace
+                  </button>
+                </div>
+                {!!boards.length && (
+                  <div className="settings-subhead">
+                    <div>
+                      <h3>Chọn bảng và ánh xạ cột</h3>
+                      <p>
+                        Chỉ chọn “Hoàn thành” cho cột đã qua kiểm tra. Bỏ chọn
+                        bảng không xóa dự án đã gắn.
+                      </p>
+                    </div>
+                  </div>
+                )}
                 {boards.map((b) => (
                   <div className="mapping-board" key={b.id}>
                     <h4>
                       {b.name}
                       <code>{b.id}</code>
                     </h4>
-                    {b.lists.map((l) => (
-                      <div key={l.id}>
-                        <label htmlFor={l.id}>{l.name}</label>
-                        <select
-                          id={l.id}
-                          value={mapping[l.id] || ""}
-                          onChange={(e) =>
-                            setMapping({
-                              ...mapping,
-                              [l.id]: e.target.value as TaskStatus,
-                            })
-                          }
-                        >
-                          <option value="" disabled>
-                            Chọn trạng thái
+                    <div className="trello-board-target">
+                      <label htmlFor={"target-" + b.id}>Đưa vào dự án</label>
+                      <select
+                        id={"target-" + b.id}
+                        value={boardTargets[b.id] || ""}
+                        disabled={!admin || busy}
+                        onChange={(e) =>
+                          setBoardTargets({
+                            ...boardTargets,
+                            [b.id]: e.target.value,
+                          })
+                        }
+                      >
+                        <option value="">Không chọn bảng này</option>
+                        {!w.projects.some((p) => p.boardId === b.id) && (
+                          <option value="__new__">
+                            Tạo dự án mới từ tên bảng
                           </option>
-                          {Object.entries(taskLabels).map(([k, v]) => (
-                            <option key={k} value={k}>
-                              {v}
+                        )}
+                        {w.projects
+                          .filter((p) => !p.boardId || p.boardId === b.id)
+                          .map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {p.boardId ? "Đã gắn: " : "Gắn vào: "}
+                              {p.name}
                             </option>
                           ))}
-                        </select>
-                      </div>
-                    ))}
+                      </select>
+                    </div>
+                    {!!boardTargets[b.id] &&
+                      b.lists.map((l) => (
+                        <div key={l.id}>
+                          <label htmlFor={l.id}>{l.name}</label>
+                          <select
+                            id={l.id}
+                            disabled={!admin || busy}
+                            value={mapping[l.id] || ""}
+                            onChange={(e) =>
+                              setMapping({
+                                ...mapping,
+                                [l.id]: e.target.value as TaskStatus,
+                              })
+                            }
+                          >
+                            <option value="" disabled>
+                              Chọn trạng thái
+                            </option>
+                            {Object.entries(taskLabels).map(([k, v]) => (
+                              <option key={k} value={k}>
+                                {v}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      ))}
                   </div>
                 ))}
+                {!!boards.length && admin && (
+                  <div className="trello-import-actions">
+                    {Object.values(boardTargets).includes("__new__") && (
+                      <>
+                        <p>
+                          Dự án mới dùng bạn làm người phụ trách, giá trị hợp
+                          đồng bằng 0. Chọn ngày dự kiến; sau khi tạo có thể sửa
+                          thông tin trong Dự án.
+                        </p>
+                        <div className="trello-workspace-controls">
+                          <Field label="Ngày bắt đầu dự án mới">
+                            <input
+                              type="date"
+                              value={importStart}
+                              disabled={busy}
+                              onChange={(e) => setImportStart(e.target.value)}
+                            />
+                          </Field>
+                          <Field label="Hạn bàn giao dự án mới">
+                            <input
+                              type="date"
+                              value={importDue}
+                              disabled={busy}
+                              min={importStart}
+                              onChange={(e) => setImportDue(e.target.value)}
+                            />
+                          </Field>
+                        </div>
+                      </>
+                    )}
+                    <button
+                      className="button primary"
+                      disabled={
+                        busy || !Object.values(boardTargets).some(Boolean)
+                      }
+                      onClick={async () => {
+                        setSettingsError("");
+                        const targets = boards
+                          .filter((b) => boardTargets[b.id])
+                          .map((b) => ({
+                            boardId: b.id,
+                            ...(boardTargets[b.id] === "__new__"
+                              ? {}
+                              : { projectId: boardTargets[b.id] }),
+                          }));
+                        if (targets.length > 20) {
+                          setSettingsError("Chọn tối đa 20 bảng mỗi lần.");
+                          return;
+                        }
+                        if (
+                          targets.some((t) => !t.projectId) &&
+                          (!importStart ||
+                            !importDue ||
+                            importDue < importStart)
+                        ) {
+                          setSettingsError(
+                            "Chọn ngày bắt đầu và hạn bàn giao hợp lệ cho dự án mới.",
+                          );
+                          return;
+                        }
+                        if (
+                          boards
+                            .filter((b) => boardTargets[b.id])
+                            .some((b) => b.lists.some((l) => !mapping[l.id]))
+                        ) {
+                          setSettingsError(
+                            "Chọn trạng thái cho tất cả cột của các bảng đã chọn.",
+                          );
+                          return;
+                        }
+                        setBusy(true);
+                        try {
+                          const result = await request<{
+                            created: number;
+                            linked: number;
+                            existing: number;
+                          }>("/trello/import", "POST", {
+                            workspaceId: trelloWorkspaceId,
+                            targets,
+                            listMapping: mapping,
+                            start: importStart || localDate(),
+                            due: importDue || importStart || localDate(),
+                          });
+                          const latest = await bootstrap();
+                          setW(latest.workspace);
+                          setSession(latest.session);
+                          setMapping(latest.workspace.settings.listMapping);
+                          setBoardTargets(
+                            Object.fromEntries(
+                              boards.map((b) => [
+                                b.id,
+                                boardTargets[b.id]
+                                  ? latest.workspace.projects.find(
+                                      (p) => p.boardId === b.id,
+                                    )?.id || ""
+                                  : "",
+                              ]),
+                            ),
+                          );
+                          setToast(
+                            `Đã tạo ${result.created} dự án, gắn ${result.linked} bảng và giữ ${result.existing} liên kết. Bấm Đồng bộ ngay để tải công việc.`,
+                          );
+                        } catch (e) {
+                          setSettingsError((e as Error).message);
+                        } finally {
+                          setBusy(false);
+                        }
+                      }}
+                    >
+                      <Check size={16} />
+                      Lưu bảng & ánh xạ
+                    </button>
+                    <button
+                      className="button"
+                      disabled={busy || !w.projects.some((p) => p.boardId)}
+                      onClick={sync}
+                    >
+                      <RefreshCw size={16} />
+                      Đồng bộ ngay
+                    </button>
+                    <p>
+                      Đồng bộ lấy công việc từ tất cả dự án đã gắn bảng Trello,
+                      kể cả bảng thuộc Workspace khác.
+                    </p>
+                  </div>
+                )}
                 {!boards.length && (
                   <div className="info-box">
                     <Link2 size={18} />
                     <span>
                       {Object.keys(mapping).length
                         ? `Đã lưu ${Object.keys(mapping).length} ánh xạ cột. Tải danh sách bảng để chỉnh sửa.`
-                        : "Chưa tải bảng Trello. Sau khi cấu hình kết nối, tải bảng để chọn trạng thái tương ứng."}
+                        : "Tải Workspace, chọn Workspace và tải bảng để bắt đầu kết nối dự án."}
                     </span>
                   </div>
                 )}

@@ -62,9 +62,10 @@ npx wrangler secret put TRELLO_API_KEY
 npx wrangler secret put TRELLO_TOKEN
 ```
 
-3. Trong dashboard, thêm nhân sự với email và Trello Member ID. Thêm dự án và Board ID đầy đủ 24 ký tự nếu có. Mỗi bảng chỉ gắn một dự án.
-4. Mở **Kết nối & cài đặt → Tải danh sách bảng**, ánh xạ tất cả cột đang chứa công việc sang trạng thái dashboard. Cột hoàn thành phải là cột đã qua kiểm tra.
-5. Lưu và **Đồng bộ ngay**. Mở từng dự án, bấm công việc để nhập trọng số, giờ dự kiến và phần trăm được xác nhận.
+3. Đăng nhập bằng tài khoản admin. Trong **Kết nối & cài đặt**, chọn **Tải Workspace**, chọn Workspace Trello rồi bấm **Tải bảng trong Workspace**. Chỉ các Workspace mà tài khoản cấp token là thành viên mới được liệt kê.
+4. Với mỗi bảng cần đồng bộ, chọn **Tạo dự án mới từ tên bảng** hoặc **Gắn vào** một dự án chưa có bảng Trello. Có thể chọn tối đa 20 bảng mỗi lần. Dự án mới dùng admin hiện tại làm người phụ trách, giá trị hợp đồng bằng 0; nhập ngày bắt đầu và hạn bàn giao dự kiến rồi sửa thông tin còn lại trong Dự án.
+5. Ánh xạ từng cột của các bảng đã chọn sang trạng thái dashboard. Chỉ chọn **Hoàn thành** cho cột đã qua kiểm tra. Bấm **Lưu bảng & ánh xạ**, sau đó **Đồng bộ ngay**. Việc lưu liên kết không tự chạy đồng bộ; đồng bộ thủ công và cron đều đọc tất cả dự án đã gắn bảng, kể cả bảng thuộc Workspace khác. Bỏ chọn bảng không xóa hoặc ngắt liên kết dự án đã lưu.
+6. Thêm nhân sự với email và Trello Member ID để tự gán công việc khi đồng bộ. Mở từng dự án, bấm công việc để nhập trọng số, giờ dự kiến và phần trăm được xác nhận. Mỗi bảng chỉ gắn một dự án; lưu lại cùng bảng sẽ dùng liên kết cũ, không tạo dự án trùng. Các thông tin như hợp đồng, nhân sự và hồ sơ Drive của dự án có sẵn được giữ nguyên khi gắn bảng.
 
 Khóa Trello chỉ dùng ở Worker, không đưa xuống trình duyệt. Nếu một cột chưa ánh xạ, đồng bộ sẽ báo lỗi rõ ràng. Lịch 15 phút được khai báo trong Wrangler; không phải tác vụ ChatGPT. Worker có khóa chống chạy đồng bộ chồng nhau.
 

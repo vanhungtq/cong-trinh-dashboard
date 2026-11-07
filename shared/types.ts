@@ -69,7 +69,19 @@ export interface Document {
   url: string;
   updatedAt: string;
 }
+export interface TrelloWorkspace {
+  id: string;
+  name: string;
+  displayName: string;
+}
+export interface TrelloBoard {
+  id: string;
+  name: string;
+  url: string;
+  lists: { id: string; name: string }[];
+}
 export interface Settings {
+  trelloWorkspaceId?: string;
   companyName: string;
   listMapping: Record<string, TaskStatus>;
   lastSync: string;

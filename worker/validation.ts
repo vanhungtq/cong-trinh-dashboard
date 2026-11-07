@@ -95,3 +95,22 @@ export const settingsSchema = z.object({
     z.enum(["todo", "doing", "review", "blocked", "done"]),
   ),
 });
+
+const trelloId = z.string().regex(/^[a-f0-9]{24}$/i);
+export const trelloImportSchema = z
+  .object({
+    workspaceId: trelloId,
+    targets: z
+      .array(
+        z.object({
+          boardId: trelloId,
+          projectId: z.string().min(1).optional(),
+        }),
+      )
+      .min(1)
+      .max(20),
+    listMapping: settingsSchema.shape.listMapping,
+    start: date,
+    due: date,
+  })
+  .refine((v) => v.due >= v.start, "Hạn bàn giao phải sau ngày bắt đầu");

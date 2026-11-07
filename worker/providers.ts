@@ -5,6 +5,8 @@ import type {
   Task,
   TaskStatus,
   Person,
+  TrelloWorkspace,
+  TrelloBoard,
 } from "../shared/types";
 import { HttpError } from "./auth";
 import { localDate } from "../shared/metrics";
@@ -28,6 +30,162 @@ export async function trello<T>(
       `Trello trả về lỗi ${r.status}. Kiểm tra quyền truy cập và thử lại.`,
     );
   return r.json();
+}
+export async function trelloWorkspaces(env: Env) {
+  return trello<TrelloWorkspace[]>(env, "members/me/organizations", {
+    fields: "name,displayName",
+  });
+}
+export async function trelloBoards(env: Env, workspaceId: string) {
+  if (!/^[a-f0-9]{24}$/i.test(workspaceId))
+    throw new HttpError(400, "Chọn Workspace Trello hợp lệ.");
+  const workspaces = await trelloWorkspaces(env);
+  if (!workspaces.some((w) => w.id === workspaceId))
+    throw new HttpError(
+      403,
+      "Bạn không có quyền truy cập Workspace Trello này.",
+    );
+  return trello<TrelloBoard[]>(env, `organizations/${workspaceId}/boards`, {
+    filter: "open",
+    fields: "name,url",
+    lists: "open",
+    list_fields: "name",
+  });
+}
+export async function importTrelloBoards(
+  env: Env,
+  user: Person,
+  data: {
+    workspaceId: string;
+    targets: { boardId: string; projectId?: string }[];
+    listMapping: Record<string, TaskStatus>;
+    start: string;
+    due: string;
+  },
+) {
+  if (new Set(data.targets.map((t) => t.boardId)).size !== data.targets.length)
+    throw new HttpError(400, "Một bảng chỉ được chọn một lần.");
+  const boards = await trelloBoards(env, data.workspaceId);
+  // Use the sync lock so scheduled imports cannot overlap project linking.
+  const now = Date.now();
+  const lock = await env.DB.prepare(
+    "INSERT INTO sync_lock (id,expires_at) VALUES (?,?) ON CONFLICT(id) DO UPDATE SET expires_at=excluded.expires_at WHERE sync_lock.expires_at < ?",
+  )
+    .bind("trello", now + 600000, now)
+    .run();
+  if (!lock.meta.changes)
+    throw new HttpError(409, "Một lượt đồng bộ đang chạy. Thử lại sau.");
+  try {
+    const projects = (
+      await env.DB.prepare("SELECT data FROM projects").all<{ data: string }>()
+    ).results.map((r) => JSON.parse(r.data) as Project);
+    const settings = await getSettings(env);
+    const mapping = { ...settings.listMapping };
+    const planned = new Set<string>();
+    const statements = [];
+    let created = 0,
+      linked = 0,
+      existing = 0;
+    for (const target of data.targets) {
+      const board = boards.find((b) => b.id === target.boardId);
+      if (!board)
+        throw new HttpError(
+          400,
+          "Bảng không thuộc Workspace đã chọn hoặc đã đóng.",
+        );
+      for (const list of board.lists) {
+        if (!data.listMapping[list.id])
+          throw new HttpError(
+            400,
+            `Chọn trạng thái cho cột ${list.name} trong ${board.name}.`,
+          );
+        mapping[list.id] = data.listMapping[list.id];
+      }
+      const attached = projects.find((p) => p.boardId === board.id);
+      if (attached) {
+        if (target.projectId && target.projectId !== attached.id)
+          throw new HttpError(409, "Bảng đã được gắn vào một dự án khác.");
+        existing++;
+        continue;
+      }
+      let project: Project;
+      if (target.projectId) {
+        const old = projects.find((p) => p.id === target.projectId);
+        if (!old) throw new HttpError(404, "Dự án không tồn tại.");
+        if (old.boardId || planned.has(old.id))
+          throw new HttpError(409, "Dự án đã được gắn một bảng Trello.");
+        project = { ...old, boardId: board.id, boardUrl: board.url };
+        linked++;
+      } else {
+        project = {
+          id: "trello-board-" + board.id,
+          code: "TR-" + board.id,
+          name: board.name,
+          client: "Chưa cập nhật",
+          location: "",
+          managerId: user.id,
+          contract: 0,
+          accepted: 0,
+          start: data.start,
+          due: data.due,
+          status: "active",
+          phase: "Chuẩn bị",
+          boardId: board.id,
+          boardUrl: board.url,
+          driveFolderId: "",
+          color: "#547562",
+        };
+        if (
+          projects.some(
+            (p) =>
+              p.id === project.id ||
+              p.code.toLowerCase() === project.code.toLowerCase(),
+          )
+        )
+          throw new HttpError(
+            409,
+            "Mã dự án đã tồn tại. Chọn dự án để gắn bảng.",
+          );
+        created++;
+      }
+      planned.add(project.id);
+      statements.push(
+        env.DB.prepare(
+          "INSERT INTO projects (id,data) VALUES (?,?) ON CONFLICT(id) DO UPDATE SET data=excluded.data",
+        ).bind(project.id, JSON.stringify(project)),
+      );
+      statements.push(
+        env.DB.prepare(
+          "INSERT INTO audit_log (id,actor,action,entity_id,created_at,data) VALUES (?,?,?,?,?,?)",
+        ).bind(
+          crypto.randomUUID(),
+          user.email,
+          "trello.board.link",
+          project.id,
+          new Date().toISOString(),
+          JSON.stringify({ boardId: board.id, workspaceId: data.workspaceId }),
+        ),
+      );
+    }
+    statements.push(
+      env.DB.prepare(
+        "INSERT INTO settings (id,data) VALUES (?,?) ON CONFLICT(id) DO UPDATE SET data=excluded.data",
+      ).bind(
+        "workspace",
+        JSON.stringify({
+          ...settings,
+          trelloWorkspaceId: data.workspaceId,
+          listMapping: mapping,
+        }),
+      ),
+    );
+    await env.DB.batch(statements);
+    return { created, linked, existing };
+  } finally {
+    await env.DB.prepare("DELETE FROM sync_lock WHERE id=?")
+      .bind("trello")
+      .run();
+  }
 }
 export async function getSettings(env: Env): Promise<Settings> {
   const row = await env.DB.prepare("SELECT data FROM settings WHERE id=?")
