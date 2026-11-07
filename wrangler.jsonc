@@ -4,7 +4,10 @@
   "main": "dist/server/index.js",
   "compatibility_date": "2025-11-01",
   "vars": {
-    "APP_MODE": "demo"
+    "APP_MODE": "live",
+    "CF_ACCESS_TEAM_DOMAIN": "divine-disk-1be9.cloudflareaccess.com",
+    "CF_ACCESS_AUD": "8b3b085f45c7c92647fbbe93e86492d208ed2f194102cc6c4cba58f1267b76ee",
+    "ADMIN_EMAIL": "vanhungtq1@gmail.com"
   },
   "d1_databases": [
     {
