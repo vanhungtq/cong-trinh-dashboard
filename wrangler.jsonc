@@ -7,7 +7,10 @@
     "APP_MODE": "live",
     "CF_ACCESS_TEAM_DOMAIN": "divine-disk-1be9.cloudflareaccess.com",
     "CF_ACCESS_AUD": "8b3b085f45c7c92647fbbe93e86492d208ed2f194102cc6c4cba58f1267b76ee",
-    "ADMIN_EMAIL": "vanhungtq1@gmail.com"
+    "ADMIN_EMAIL": "vanhungtq1@gmail.com",
+"CF_ACCESS_TEAM_DOMAIN": "divine-disk-1be9.cloudflareaccess.com",
+    "TRELLO_API_KEY": "db7adcbf89ef637901814d35909b3e60",
+    "TRELLO_TOKEN": "ATTA7fc94be56f11713b0e9b730f0a3889f4a8f850057d689633f5e1bf5808fe9c63409A2F66"
   },
   "d1_databases": [
     {
@@ -26,3 +29,4 @@
     "enabled": true
   }
 }
+
