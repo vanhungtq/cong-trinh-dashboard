@@ -1,3 +1,9 @@
+import {
+  capturePersonnel,
+  personnelReport,
+  saveDailyLog,
+  updateMember,
+} from "./personnel";
 import { handlePasswordAuth } from "./password-auth";
 import { ZodError } from "zod";
 import { makeDemo } from "../shared/demo";
@@ -151,6 +157,22 @@ export async function handleApi(req: Request, env: Env) {
     if (response) return response;
   }
   const user = await identity(req, env);
+  if (path === "/api/personnel/report" && req.method === "GET")
+    return json(
+      await personnelReport(env, user, url.searchParams.get("day") || ""),
+    );
+  if (path === "/api/personnel/log" && req.method === "PUT")
+    return json(await saveDailyLog(env, user, await body(req)));
+  const memberUpdate = path.match(/^\/api\/members\/([^/]+)$/);
+  if (memberUpdate && req.method === "PUT") {
+    roleAllowed(user, ["admin"]);
+    return json(
+      await updateMember(env, user, memberUpdate[1], {
+        ...memberSchema.parse(await body(req)),
+        id: memberUpdate[1],
+      }),
+    );
+  }
   if (path === "/api/bootstrap" && req.method === "GET") {
     const [projects, tasks, people, receipts, terms, documents, settings] =
       await Promise.all([
@@ -374,6 +396,7 @@ export async function handleApi(req: Request, env: Env) {
       ),
       await audit(env, user, "task.update", t.id, { before: old, after: t }),
     ]);
+    await capturePersonnel(env);
     return json(t);
   }
   if (path === "/api/settings" && req.method === "PUT") {
@@ -412,7 +435,9 @@ export async function handleApi(req: Request, env: Env) {
   }
   if (path === "/api/trello/sync" && req.method === "POST") {
     roleAllowed(user, ["admin"]);
-    return json(await syncTrello(env));
+    const result = await syncTrello(env);
+    await capturePersonnel(env);
+    return json(result);
   }
   if (path === "/api/drive/files" && req.method === "GET") {
     roleAllowed(user, ["admin", "manager"]);
@@ -483,12 +508,16 @@ export default {
     env: Env,
     ctx: ExecutionContext,
   ) {
-    if (
-      env.APP_MODE === "live" &&
-      env.DB &&
-      env.TRELLO_API_KEY &&
-      env.TRELLO_TOKEN
-    )
-      ctx.waitUntil(syncTrello(env).catch(() => {}));
+    if (env.APP_MODE === "live" && env.DB)
+      ctx.waitUntil(
+        (async () => {
+          try {
+            if (env.TRELLO_API_KEY && env.TRELLO_TOKEN) await syncTrello(env);
+          } catch {
+            console.error("Scheduled Trello sync failed");
+          }
+          await capturePersonnel(env);
+        })(),
+      );
   },
 };

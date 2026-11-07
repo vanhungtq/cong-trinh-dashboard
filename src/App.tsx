@@ -1,3 +1,4 @@
+import Personnel from "./Personnel";
 import { Login, AccountSettings } from "./auth-ui";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -47,6 +48,7 @@ import type {
   Project,
   Task,
   TaskStatus,
+  Person,
   TrelloWorkspace,
 } from "../shared/types";
 import { roleLabels, taskLabels } from "../shared/types";
@@ -165,7 +167,7 @@ export default function App() {
     [resetConfirm, setResetConfirm] = useState(false);
   const [form, setForm] = useState<{
       kind: FormKind;
-      initial?: Project | Task;
+      initial?: Project | Task | Person;
       projectId?: string;
     } | null>(null),
     [detail, setDetail] = useState<string | null>(null),
@@ -321,9 +323,11 @@ export default function App() {
       });
     if (kind === "member") {
       const d = memberSchema.parse(data);
-      if (next.people.some((p) => p.email === d.email))
+      if (next.people.some((p) => p.email === d.email && p.id !== id))
         throw Error("Email này đã có trong đội ngũ.");
-      next.people.push({ ...d, id: newId });
+      if (id)
+        next.people = next.people.map((p) => (p.id === id ? { ...d, id } : p));
+      else next.people.push({ ...d, id: newId });
     }
     if (kind === "task") {
       const d = taskSchema.parse(data);
@@ -1372,104 +1376,12 @@ export default function App() {
             </>
           )}
           {page === "team" && (
-            <>
-              <div className="team-banner">
-                <div>
-                  <span className="eyebrow">ĐỒNG HÀNH CÙNG ĐỘI NGŨ</span>
-                  <h2>Đúng người. Đủ nguồn lực.</h2>
-                  <p>
-                    Khối lượng mở thể hiện tổng giờ dự kiến của công việc chưa
-                    hoàn thành.
-                  </p>
-                </div>
-                <div className="team-avatar-stack">
-                  {w.people.slice(0, 5).map((p) => (
-                    <Avatar key={p.id} person={p} size={46} />
-                  ))}
-                  <span>{w.people.length} thành viên</span>
-                </div>
-              </div>
-              <div className="toolbar">
-                <SearchBox
-                  value={search}
-                  onChange={setSearch}
-                  placeholder="Tìm nhân sự hoặc chuyên môn…"
-                />
-              </div>
-              <div className="team-grid">
-                {w.people
-                  .filter((p) =>
-                    [p.name, p.discipline]
-                      .join(" ")
-                      .toLowerCase()
-                      .includes(search.toLowerCase()),
-                  )
-                  .map((p) => {
-                    const tasks = w.tasks.filter((t) => t.assigneeId === p.id),
-                      open = tasks.filter(
-                        (t) => !t.archived && t.status !== "done",
-                      ),
-                      hours = open.reduce((s, t) => s + t.hours, 0),
-                      rate = onTimeRate(tasks);
-                    return (
-                      <section className="person-card" key={p.id}>
-                        <div className="person-card-head">
-                          <Avatar person={p} size={48} />
-                          <span className="role-tag">{roleLabels[p.role]}</span>
-                        </div>
-                        <h3>{p.name}</h3>
-                        <p>{p.discipline}</p>
-                        <div className="person-stats">
-                          <div>
-                            <b>{open.length}</b>
-                            <span>Việc đang mở</span>
-                          </div>
-                          <div>
-                            <b>{rate === null ? "—" : rate + "%"}</b>
-                            <span>Đúng hạn*</span>
-                          </div>
-                          <div>
-                            <b
-                              className={
-                                tasks.some((t) => isOverdue(t))
-                                  ? "text-danger"
-                                  : ""
-                              }
-                            >
-                              {tasks.filter((t) => isOverdue(t)).length}
-                            </b>
-                            <span>Quá hạn</span>
-                          </div>
-                        </div>
-                        <div className="workload-label">
-                          <span>Khối lượng đang mở</span>
-                          <b>{hours} giờ</b>
-                        </div>
-                        <Progress
-                          value={Math.min(100, (hours / p.capacity) * 100)}
-                          color={hours > p.capacity ? "#bf8e41" : undefined}
-                        />
-                        <div className="person-card-footer">
-                          <span>
-                            ≈{" "}
-                            {(hours / p.capacity).toLocaleString("vi-VN", {
-                              maximumFractionDigits: 1,
-                            })}{" "}
-                            tuần nguồn lực
-                          </span>
-                          <span>{p.capacity} giờ/tuần</span>
-                        </div>
-                      </section>
-                    );
-                  })}
-              </div>
-              <p className="section-note">
-                * Tỷ lệ đúng hạn chỉ tính việc hoàn thành có đủ ngày hoàn thành
-                và hạn bàn giao. Công việc mới nhập từ Trello có thể chưa đủ
-                lịch sử. Khối lượng mở không đồng nghĩa với lịch làm việc trong
-                tuần.
-              </p>
-            </>
+            <Personnel
+              w={w}
+              session={session}
+              onEdit={(p) => setForm({ kind: "member", initial: p })}
+              onEditTask={(t) => setForm({ kind: "task", initial: t })}
+            />
           )}
           {page === "documents" && (
             <>
@@ -2202,7 +2114,9 @@ export default function App() {
           title={
             form.initial && form.kind === "project"
               ? "Chỉnh sửa dự án"
-              : modalNames[form.kind]
+              : form.initial && form.kind === "member"
+                ? "Cập nhật nhân sự"
+                : modalNames[form.kind]
           }
           subtitle={
             form.kind === "task"

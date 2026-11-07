@@ -122,3 +122,7 @@ Không bật deploy tự động trên mọi push để tránh đổi môi trư�
 ## Bản xem thử qua ChatGPT
 
 Mã nguồn có `.openai/hosting.json` dùng cho bản demo riêng tư được phát hành trong ChatGPT. Nó không cấu hình Cloudflare account của bạn. Deploy qua Wrangler/GitHub sử dụng `wrangler.jsonc` và hoàn toàn độc lập. Bản xem thử chưa kết nối tài khoản Trello hoặc Google thật.
+
+## Cập nhật Nhân sự và báo cáo ngày
+
+Chạy migrations trước deploy (`npx wrangler d1 migrations apply DB --remote && npx wrangler deploy`). Migration `0005_personnel.sql` thêm bảng báo cáo và ảnh chụp trạng thái ngày, giữ dữ liệu cũ. Sau deploy, admin vào Nhân sự → nút sửa trên từng thẻ để phân Phòng ban/Team. Nhân viên vào tab Báo cáo ngày để ghi báo cáo của mình. Cron 15 phút sẽ bắt đầu lưu lịch sử từ thời điểm này; ngày chưa có lịch sử hiển thị thông báo thiếu dữ liệu.

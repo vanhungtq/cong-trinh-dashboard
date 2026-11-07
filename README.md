@@ -94,3 +94,11 @@ npm run build
 ```
 
 Kiểm thử dùng SQLite trong bộ nhớ tương thích các câu SQL hiện tại; các cuộc gọi Trello/Google/Cloudflare Access bên ngoài được giả lập khi cần. Cần kiểm tra lại kết nối bằng tài khoản thật sau khi cấu hình. Không tự sửa migrations đã áp dụng; thêm migration mới.
+
+## Nhân sự & báo cáo ngày
+
+- Lọc theo ngày (giờ Việt Nam), phòng ban, team, nhân sự; xem thẻ tổng quan hoặc bảng công việc có trạng thái bằng màu và chữ, xuất CSV theo bộ lọc.
+- Admin có thể sửa hồ sơ nhân sự, phân phòng/team và Trello Member ID. Chủ nhiệm chỉ xem công việc trong dự án phụ trách; nhân viên/kế toán xem báo cáo của bản thân.
+- Nhân viên ghi báo cáo cho task được giao: giờ thực tế tự báo cáo, tiến độ tự báo cáo, kết quả, kế hoạch và vướng mắc. Một bản ghi/ngày/task/người; gửi lại để sửa. Tổng giờ/người/ngày không vượt 24. Tiến độ tự báo cáo không tự sửa tiến độ được chủ nhiệm xác nhận.
+- Chỉ số hoàn thành/đúng hạn trong ngày dựa trên ngày hoàn thành quan sát được. Thiếu lịch sử hiển thị “—”; không có điểm KPI suy diễn. Tổng giờ dự kiến đang mở không phải tải công việc trong một tuần.
+- Migration `0005_personnel.sql` thêm lịch sử ngày và báo cáo. Cron hiện có lưu trạng thái task mỗi 15 phút, kể cả khi chưa cấu hình Trello; mỗi ngày giữ lần lưu cuối, không phải nhật ký mọi thay đổi. Không dựng lịch sử cho ngày trước khi triển khai. Báo cáo lịch sử được lọc theo phân nhóm nhân sự hiện tại.

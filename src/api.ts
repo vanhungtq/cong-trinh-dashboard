@@ -107,6 +107,7 @@ export function persistDemo(w: Workspace) {
   localStorage.setItem(KEY, JSON.stringify(w));
 }
 export function resetDemo() {
+  localStorage.removeItem("cong-trinh-personnel-demo-v1");
   localStorage.removeItem(KEY);
   return makeDemo();
 }

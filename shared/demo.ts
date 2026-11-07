@@ -64,6 +64,26 @@ export function makeDemo(now = new Date()): Workspace {
       capacity: 40,
     },
   ];
+  people.forEach((p) => {
+    p.department =
+      p.role === "admin"
+        ? "Ban điều hành"
+        : p.role === "finance"
+          ? "Phòng Tài chính"
+          : p.discipline.includes("Chủ nhiệm")
+            ? "Phòng Dự án"
+            : "Phòng Thiết kế";
+    p.team =
+      p.role === "finance"
+        ? "Kế toán"
+        : p.role === "admin" || p.discipline.includes("Chủ nhiệm")
+          ? "Điều phối"
+          : p.discipline.includes("Kết cấu")
+            ? "Kết cấu"
+            : p.discipline.toLowerCase().includes("điện")
+              ? "MEP"
+              : "Kiến trúc";
+  });
   const projects: Project[] = [
     {
       id: "p1",

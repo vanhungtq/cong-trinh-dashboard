@@ -6,6 +6,8 @@ export interface Person {
   email: string;
   role: Role;
   discipline: string;
+  department?: string;
+  team?: string;
   capacity: number;
   trelloId?: string;
 }

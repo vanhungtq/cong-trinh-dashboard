@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Workspace, Project, Task } from "../shared/types";
+import type { Workspace, Project, Task, Person } from "../shared/types";
 import { localDate } from "../shared/metrics";
 import { Field, Submit } from "./components";
 export type FormKind =
@@ -14,7 +14,7 @@ export default function EntryForm({
 }: {
   kind: FormKind;
   w: Workspace;
-  initial?: Project | Task;
+  initial?: Project | Task | Person;
   projectId?: string;
   onSave: (
     kind: FormKind,
@@ -27,7 +27,8 @@ export default function EntryForm({
     [error, setError] = useState(""),
     [selected, setSelected] = useState(projectId || w.projects[0]?.id || "");
   const p = kind === "project" ? (initial as Project) : undefined,
-    t = kind === "task" ? (initial as Task) : undefined;
+    t = kind === "task" ? (initial as Task) : undefined,
+    member = kind === "member" ? (initial as Person) : undefined;
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
@@ -320,14 +321,19 @@ export default function EntryForm({
       {kind === "member" && (
         <>
           <Field label="Họ và tên">
-            <input name="name" required />
+            <input name="name" defaultValue={member?.name} required />
           </Field>
           <Field label="Email đăng nhập">
-            <input name="email" type="email" required />
+            <input
+              name="email"
+              type="email"
+              defaultValue={member?.email}
+              required
+            />
           </Field>
           <div className="form-grid">
             <Field label="Vai trò">
-              <select name="role">
+              <select name="role" defaultValue={member?.role || "staff"}>
                 <option value="staff">Nhân viên</option>
                 <option value="manager">Chủ nhiệm</option>
                 <option value="finance">Kế toán</option>
@@ -337,8 +343,27 @@ export default function EntryForm({
             <Field label="Chuyên môn">
               <input
                 name="discipline"
+                defaultValue={member?.discipline}
                 placeholder="Kiến trúc, kết cấu…"
                 required
+              />
+            </Field>
+          </div>
+          <div className="form-grid">
+            <Field label="Phòng ban">
+              <input
+                name="department"
+                maxLength={100}
+                defaultValue={member?.department}
+                placeholder="VD: Phòng Thiết kế"
+              />
+            </Field>
+            <Field label="Team">
+              <input
+                name="team"
+                maxLength={100}
+                defaultValue={member?.team}
+                placeholder="VD: Team Kiến trúc 1"
               />
             </Field>
           </div>
@@ -348,7 +373,7 @@ export default function EntryForm({
               type="number"
               min="1"
               max="100"
-              defaultValue="40"
+              defaultValue={member?.capacity || 40}
               required
             />
           </Field>
@@ -356,7 +381,11 @@ export default function EntryForm({
             label="Trello Member ID"
             hint="Dùng để đối chiếu người được giao thẻ Trello."
           >
-            <input name="trelloId" placeholder="Mã thành viên 24 ký tự" />
+            <input
+              name="trelloId"
+              defaultValue={member?.trelloId}
+              placeholder="Mã thành viên 24 ký tự"
+            />
           </Field>
         </>
       )}

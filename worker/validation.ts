@@ -75,6 +75,8 @@ export const memberSchema = z.object({
     .transform((v) => v.toLowerCase()),
   role: z.enum(["admin", "manager", "finance", "staff"]),
   discipline: text,
+  department: z.string().trim().max(100).default(""),
+  team: z.string().trim().max(100).default(""),
   capacity: z.number().min(1).max(100),
   trelloId: z
     .string()

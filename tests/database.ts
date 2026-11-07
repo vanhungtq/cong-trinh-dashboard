@@ -7,6 +7,7 @@ export function database() {
     "0002_payment_cap.sql",
     "0003_receipt_reference.sql",
     "0004_password_auth.sql",
+    "0005_personnel.sql",
   ])
     sql.exec(
       readFileSync(new URL("../migrations/" + file, import.meta.url), "utf8"),
