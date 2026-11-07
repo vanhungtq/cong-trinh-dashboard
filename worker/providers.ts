@@ -23,7 +23,15 @@ export async function trello<T>(
     key: env.TRELLO_API_KEY,
     token: env.TRELLO_TOKEN,
   }).toString();
-  const r = await fetch(url, { signal: AbortSignal.timeout(20000) });
+  let r: Response;
+  try {
+    r = await fetch(url, { signal: AbortSignal.timeout(20000) });
+  } catch {
+    throw new HttpError(
+      502,
+      "Máy chủ chưa kết nối được với Trello hoặc Trello phản hồi quá chậm. Vui lòng thử lại.",
+    );
+  }
   if (!r.ok)
     throw new HttpError(
       502,

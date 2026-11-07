@@ -70,7 +70,7 @@ import {
   taskSchema,
   termSchema,
 } from "../worker/validation";
-import { bootstrap, persistDemo, request, resetDemo } from "./api";
+import { ApiError, bootstrap, persistDemo, request, resetDemo } from "./api";
 import {
   Avatar,
   Badge,
@@ -182,7 +182,8 @@ export default function App() {
     [importDue, setImportDue] = useState(""),
     [mapping, setMapping] = useState<Record<string, TaskStatus>>({}),
     [company, setCompany] = useState(""),
-    [settingsError, setSettingsError] = useState("");
+    [settingsError, setSettingsError] = useState(""),
+    [settingsRecovery, setSettingsRecovery] = useState(false);
   const [driveView, setDriveView] = useState<{
     projectId: string;
     files: {
@@ -1685,12 +1686,17 @@ export default function App() {
                     onClick={async () => {
                       setBusy(true);
                       setSettingsError("");
+                      setSettingsRecovery(false);
                       try {
                         setTrelloWorkspaces(
                           await request("/trello/workspaces"),
                         );
                       } catch (e) {
                         setSettingsError((e as Error).message);
+                        setSettingsRecovery(
+                          e instanceof ApiError &&
+                            (e.kind === "auth" || e.kind === "network"),
+                        );
                       } finally {
                         setBusy(false);
                       }
@@ -1722,6 +1728,7 @@ export default function App() {
                         setBoards([]);
                         setBoardTargets({});
                         setSettingsError("");
+                        setSettingsRecovery(false);
                       }}
                     >
                       <option value="">Chọn Workspace</option>
@@ -1751,6 +1758,7 @@ export default function App() {
                     onClick={async () => {
                       setBusy(true);
                       setSettingsError("");
+                      setSettingsRecovery(false);
                       setBoards([]);
                       setBoardTargets({});
                       try {
@@ -1774,6 +1782,10 @@ export default function App() {
                           );
                       } catch (e) {
                         setSettingsError((e as Error).message);
+                        setSettingsRecovery(
+                          e instanceof ApiError &&
+                            (e.kind === "auth" || e.kind === "network"),
+                        );
                       } finally {
                         setBusy(false);
                       }
@@ -1894,6 +1906,7 @@ export default function App() {
                       }
                       onClick={async () => {
                         setSettingsError("");
+                        setSettingsRecovery(false);
                         const targets = boards
                           .filter((b) => boardTargets[b.id])
                           .map((b) => ({
@@ -1961,6 +1974,10 @@ export default function App() {
                           );
                         } catch (e) {
                           setSettingsError((e as Error).message);
+                          setSettingsRecovery(
+                            e instanceof ApiError &&
+                              (e.kind === "auth" || e.kind === "network"),
+                          );
                         } finally {
                           setBusy(false);
                         }
@@ -1994,7 +2011,14 @@ export default function App() {
                   </div>
                 )}
                 {settingsError && (
-                  <div className="form-error">{settingsError}</div>
+                  <div className="form-error" role="alert">
+                    <p>{settingsError}</p>
+                    {settingsRecovery && (
+                      <a className="button small" href="/">
+                        Mở lại Dashboard / đăng nhập lại
+                      </a>
+                    )}
+                  </div>
                 )}
                 {admin && (
                   <button
@@ -2002,6 +2026,7 @@ export default function App() {
                     disabled={busy}
                     onClick={async () => {
                       setSettingsError("");
+                      setSettingsRecovery(false);
                       if (!company.trim()) {
                         setSettingsError("Tên công ty không được để trống.");
                         return;
@@ -2027,6 +2052,10 @@ export default function App() {
                         setToast("Đã lưu cấu hình.");
                       } catch (e) {
                         setSettingsError((e as Error).message);
+                        setSettingsRecovery(
+                          e instanceof ApiError &&
+                            (e.kind === "auth" || e.kind === "network"),
+                        );
                       } finally {
                         setBusy(false);
                       }
