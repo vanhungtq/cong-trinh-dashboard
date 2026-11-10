@@ -47,7 +47,10 @@ export default function VirtualOffice({
     [busy, setBusy] = useState(false),
     [updated, setUpdated] = useState<Date | null>(null),
     [poll, setPoll] = useState(true),
-    [autoTrello, setAutoTrello] = useState(true);
+    [autoTrello, setAutoTrello] = useState(true),
+    [activities, setActivities] = useState(true);
+  const activitiesRef = useRef(activities);
+  activitiesRef.current = activities;
   const selectedRef = useRef(selected);
   selectedRef.current = selected;
   const host = useRef<HTMLDivElement>(null),
@@ -110,7 +113,13 @@ export default function VirtualOffice({
       id: r.id,
       name: r.name,
       color: r.color,
-      people: r.people.map((p) => [p.person.id, p.person.name, p.state]),
+      people: r.people.map((p) => [
+        p.person.id,
+        p.person.name,
+        p.state,
+        p.open,
+        p.overdue,
+      ]),
     })),
   );
   useEffect(() => {
@@ -131,6 +140,7 @@ export default function VirtualOffice({
             setSelected,
             setSceneError,
           );
+          scene.current.setActivities(activitiesRef.current);
           if (selectedRef.current) scene.current.focus(selectedRef.current);
           setLoadingScene(false);
         } catch {
@@ -157,6 +167,9 @@ export default function VirtualOffice({
   useEffect(() => {
     if (selected) scene.current?.focus(selected);
   }, [selected]);
+  useEffect(() => {
+    scene.current?.setActivities(activities);
+  }, [activities]);
   async function update(sync = false) {
     if (running.current || document.hidden) return;
     running.current = true;
@@ -320,6 +333,14 @@ export default function VirtualOffice({
         >
           <RefreshCw size={15} />
           {busy ? "Đang cập nhật…" : "Cập nhật dữ liệu"}
+        </button>
+        <button
+          className="button"
+          aria-pressed={activities}
+          onClick={() => setActivities((v) => !v)}
+        >
+          <Layers size={15} />
+          {activities ? "Ẩn nhân viên ảo" : "Hiện nhân viên ảo"}
         </button>
         {session.mode === "live" && (
           <button className="button" onClick={() => setPoll(!poll)}>
@@ -534,6 +555,10 @@ export default function VirtualOffice({
         </aside>
       </div>
       <div className="office-legend">
+        <span>
+          <i style={{ background: "#c8aa70" }} />
+          NPC · Nhân viên ảo đi lại / cà phê
+        </span>
         {Object.values(officeStates).map((s) => (
           <span key={s.label}>
             <i style={{ background: s.color }} />
@@ -545,7 +570,9 @@ export default function VirtualOffice({
         <p>
           Nhân vật và chuyển động minh họa tình trạng task, không phải dữ liệu
           chấm công hay xác nhận đang online. Nhân sự chưa phân phòng được xếp
-          vào khu riêng.
+          vào khu riêng. Các NPC có nhãn “Nhân viên ảo” chỉ tạo hoạt cảnh, không
+          nằm trong thống kê nhân sự; nhân vật gắn với dữ liệu thật luôn ngồi
+          tại bàn.
         </p>
         {session.mode === "live" ? (
           <>
