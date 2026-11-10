@@ -1,3 +1,5 @@
+import { lazy, Suspense } from "react";
+const VirtualOffice = lazy(() => import("./VirtualOffice"));
 import { demoBoards } from "../shared/demo";
 import Personnel from "./Personnel";
 import { Login, AccountSettings } from "./auth-ui";
@@ -94,9 +96,16 @@ import {
 import EntryForm, { type FormKind } from "./forms";
 
 type Page =
-  "overview" | "projects" | "finance" | "team" | "documents" | "settings";
+  | "overview"
+  | "projects"
+  | "finance"
+  | "team"
+  | "documents"
+  | "settings"
+  | "office";
 const pageNames: Record<Page, string> = {
   overview: "Tổng quan",
+  office: "Văn phòng 3D",
   projects: "Dự án",
   finance: "Tài chính",
   team: "Nhân sự",
@@ -105,6 +114,7 @@ const pageNames: Record<Page, string> = {
 };
 const nav = [
   { id: "overview", icon: LayoutDashboard },
+  { id: "office", icon: Building2 },
   { id: "projects", icon: BriefcaseBusiness },
   { id: "finance", icon: Wallet },
   { id: "team", icon: Users },
@@ -791,13 +801,15 @@ export default function App() {
                   ? "Nắm bắt tiến độ. Chủ động quyết định. Đồng hành cùng đội ngũ."
                   : page === "projects"
                     ? "Từ hồ sơ đầu tiên đến khi hoàn thành và bàn giao."
-                    : page === "finance"
-                      ? "Theo dõi hợp đồng, nghiệm thu và dòng tiền thực nhận."
-                      : page === "team"
-                        ? "Hiểu khối lượng công việc để phân bổ đúng người, đúng thời điểm."
-                        : page === "documents"
-                          ? "Hồ sơ đúng dự án, đúng phiên bản, luôn dễ tìm."
-                          : "Kết nối nguồn dữ liệu và chuẩn hóa cách vận hành."}
+                    : page === "office"
+                      ? "Không gian chibi theo phòng ban, kết nối với công việc của đội ngũ."
+                      : page === "finance"
+                        ? "Theo dõi hợp đồng, nghiệm thu và dòng tiền thực nhận."
+                        : page === "team"
+                          ? "Hiểu khối lượng công việc để phân bổ đúng người, đúng thời điểm."
+                          : page === "documents"
+                            ? "Hồ sơ đúng dự án, đúng phiên bản, luôn dễ tìm."
+                            : "Kết nối nguồn dữ liệu và chuẩn hóa cách vận hành."}
               </p>
             </div>
             <div className="heading-actions">
@@ -852,6 +864,18 @@ export default function App() {
               </button>
             </div>
           )}
+          {page === "office" && (
+            <Suspense
+              fallback={<div className="info-box">Đang tải văn phòng 3D…</div>}
+            >
+              <VirtualOffice
+                w={w}
+                session={session}
+                onRefresh={refresh}
+                onEditTask={(t) => setForm({ kind: "task", initial: t })}
+              />
+            </Suspense>
+          )}
           {page === "overview" && (
             <>
               {session.mode === "demo" && (
@@ -863,6 +887,11 @@ export default function App() {
                   </p>
                   <div>
                     {[
+                      [
+                        "office",
+                        "Văn phòng 3D",
+                        "Khám phá phòng ban chibi, chọn nhân vật để xem công việc và thử các bộ lọc.",
+                      ],
                       [
                         "projects",
                         "Dự án & task",
