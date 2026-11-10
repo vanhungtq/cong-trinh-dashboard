@@ -1,0 +1,1105 @@
+/* Application skin built on Gravity UI Kit v8 tokens and components. */
+.g-root {
+  --g-font-family-sans:
+    Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  --g-text-body-1-font-size: 14px;
+  --g-text-body-1-line-height: 21px;
+  --g-border-radius-s: 6px;
+  --g-border-radius-m: 8px;
+  --g-border-radius-l: 12px;
+  --g-color-base-brand: #ffbe5c;
+  --g-color-base-brand-hover: #ffce85;
+  --g-color-text-brand-contrast: #191b20;
+  --g-text-input-focus-outline-color: var(--g-color-base-brand);
+  --green: var(--g-color-text-primary);
+  --dark: var(--g-color-text-primary);
+  --muted: var(--g-color-text-secondary);
+  --border: var(--g-color-line-generic);
+  --cream: var(--app-canvas);
+  --amber: var(--g-color-text-warning);
+  color: var(--g-color-text-primary);
+  background: var(--app-canvas);
+  font-family: var(--g-font-family-sans);
+  font-size: 14px;
+}
+.g-root_theme_light {
+  --app-canvas: #f7f8fa;
+  --app-panel: #fff;
+  --app-subtle: #f1f3f5;
+  --app-active: #fff1d9;
+  --app-shadow: 0 3px 12px #18213706;
+}
+.g-root_theme_dark {
+  --app-canvas: #17181c;
+  --app-panel: #222329;
+  --app-subtle: #2b2d35;
+  --app-active: #4c3c25;
+  --app-shadow: 0 3px 14px #0002;
+}
+.g-root .app-shell {
+  background: var(--app-canvas);
+  color: var(--g-color-text-primary);
+}
+.g-root .sidebar {
+  width: 244px;
+  height: 100dvh;
+  inset: 0 auto 0 0;
+  padding: 24px 14px 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--app-panel);
+  border-color: var(--border);
+}
+.g-root .brand {
+  padding: 0 10px;
+  color: var(--g-color-text-primary);
+}
+.g-root .brand-mark {
+  background: var(--g-color-base-brand);
+  color: #25211a;
+  border-radius: 11px;
+  box-shadow: none;
+}
+.g-root .brand small {
+  color: var(--g-color-text-secondary);
+  letter-spacing: 1.5px;
+}
+.g-root .brand strong {
+  font-weight: 700;
+}
+.g-root .workspace-switch {
+  background: var(--app-subtle);
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: var(--g-color-text-primary);
+  margin-top: 28px;
+}
+.g-root .workspace-icon {
+  background: var(--g-color-base-brand);
+  color: #342a1d;
+}
+.g-root .workspace-switch small,
+.g-root .nav-label {
+  color: var(--g-color-text-secondary);
+}
+.g-root .nav-label {
+  letter-spacing: 0.9px;
+  font-size: 10px;
+  padding-top: 6px;
+}
+.g-root .nav-item {
+  color: var(--g-color-text-secondary);
+  border-radius: 8px;
+  min-height: 43px;
+  margin: 3px 0;
+  font-size: 13px;
+  gap: 12px;
+}
+.g-root .nav-item svg {
+  width: 18px;
+  height: 18px;
+}
+.g-root .nav-item:hover {
+  background: var(--g-color-base-simple-hover);
+  color: var(--g-color-text-primary);
+}
+.g-root .nav-item.active {
+  background: var(--app-active);
+  color: var(--g-color-text-primary);
+  font-weight: 600;
+}
+.g-root .nav-item.active svg {
+  color: #b47a17;
+}
+.g-root .nav-item em {
+  background: var(--g-color-base-generic);
+  color: var(--g-color-text-secondary);
+}
+.g-root .sidebar-note {
+  background: var(--app-subtle);
+  border-color: var(--border);
+  border-radius: 10px;
+}
+.g-root .sidebar-note b {
+  color: var(--g-color-text-primary);
+}
+.g-root .sidebar-note p {
+  color: var(--g-color-text-secondary);
+}
+.g-root .sidebar-note svg {
+  opacity: 0.3;
+}
+.g-root .sidebar-user {
+  border-color: var(--border);
+  min-height: 74px;
+  margin-top: 14px;
+  padding-bottom: 14px;
+}
+.g-root .sidebar-user b {
+  color: var(--g-color-text-primary);
+}
+.g-root .sidebar-user small {
+  color: var(--g-color-text-secondary);
+}
+.g-root .avatar {
+  color: #34465b;
+}
+.g-root .user-online {
+  background: var(--g-color-base-positive-heavy);
+}
+.g-root .main-shell {
+  margin-left: 244px;
+}
+.g-root .topbar {
+  height: 64px;
+  background: var(--app-panel);
+  border-color: var(--border);
+  padding: 0 30px;
+}
+.g-root .breadcrumb {
+  font-size: 12px;
+  color: var(--g-color-text-secondary);
+}
+.g-root .breadcrumb b {
+  color: var(--g-color-text-primary);
+}
+.g-root .topbar-divider {
+  background: var(--border);
+}
+.g-root .mode-label {
+  color: var(--g-color-text-secondary);
+}
+.g-root .mode-label i {
+  background: var(--g-color-base-positive-heavy);
+}
+.g-root .mode-label.demo i {
+  background: #d8a542;
+}
+.g-root main:not(.auth-screen) {
+  padding-top: 30px;
+}
+.g-root .page-heading {
+  margin-bottom: 24px;
+  gap: 18px;
+}
+.g-root .page-heading h1 {
+  font-size: var(--g-text-header-2-font-size, 28px);
+  line-height: 1.3;
+  color: var(--g-color-text-primary);
+  font-weight: 650;
+  letter-spacing: -0.6px;
+}
+.g-root .eyebrow {
+  color: var(--g-color-text-secondary);
+  letter-spacing: 1.1px;
+  font-size: 10px;
+}
+.g-root .page-heading p {
+  color: var(--g-color-text-secondary);
+  font-size: 13px;
+  line-height: 1.7;
+}
+/* Gravity controls: native inputs used only for date/check boxes retain HTML behavior. */
+.g-root .gravity-control.g-button {
+  padding: 0;
+  border: 0;
+  min-height: 0;
+  box-shadow: none;
+  background: transparent;
+  color: var(--g-color-text-primary);
+  font-size: 13px;
+  font-weight: 500;
+  filter: none;
+}
+.g-root .gravity-control.g-button.primary {
+  background: transparent;
+  color: var(--g-color-text-brand-contrast);
+}
+.g-root .gravity-control.g-button .g-button__text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+.g-root .gravity-control.icon-button {
+  width: 32px;
+  height: 32px;
+}
+.g-root .button:not(.g-button) {
+  color: var(--g-color-text-primary);
+  background: var(--app-panel);
+  border-color: var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+}
+.g-root .icon-button:not(.g-button) {
+  color: var(--g-color-text-secondary);
+}
+.g-root .icon-button:hover {
+  background: var(--g-color-base-simple-hover);
+}
+.g-root .gravity-input {
+  width: 100%;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 400;
+}
+.g-root .gravity-input input.g-text-input__control,
+.g-root .gravity-input textarea.g-text-area__control {
+  border: 0 !important;
+  border-radius: 0;
+  background: transparent !important;
+  color: var(--g-color-text-primary);
+  box-shadow: none !important;
+  outline: none !important;
+  min-height: 0 !important;
+  padding: 0 12px !important;
+  font: inherit;
+}
+.g-root .gravity-input textarea.g-text-area__control {
+  padding: 10px 12px !important;
+}
+.g-root .gravity-input .g-text-input__content,
+.g-root .gravity-input .g-text-area__content {
+  background: var(--app-panel);
+}
+.g-root select,
+.g-root .gravity-native-input:not([type="checkbox"]),
+.g-root .entry-form select {
+  background: var(--app-panel);
+  color: var(--g-color-text-primary);
+  border: 1px solid var(--g-color-line-generic);
+  border-radius: 8px;
+  padding: 9px 12px;
+  min-height: 40px;
+  font-size: 13px;
+}
+.g-root input[type="checkbox"] {
+  accent-color: #d59830;
+}
+.g-root select:focus,
+.g-root .gravity-native-input:focus {
+  border-color: var(--g-color-base-brand) !important;
+  outline: 2px solid var(--g-color-base-brand);
+  box-shadow: none;
+  outline-offset: 1px;
+}
+.g-root .field {
+  color: var(--g-color-text-primary);
+  font-size: 13px;
+}
+.g-root .field > span:first-child {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--g-color-text-secondary);
+}
+.g-root .field small {
+  color: var(--g-color-text-secondary);
+}
+.g-root .search-box {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  position: relative;
+  min-width: 0;
+}
+.g-root .search-box > svg {
+  position: absolute;
+  left: 10px;
+  top: 12px;
+  z-index: 1;
+  color: var(--g-color-text-secondary);
+}
+.g-root .search-box .gravity-input input.g-text-input__control {
+  padding-left: 34px !important;
+}
+.g-root .search-box > button {
+  position: absolute;
+  right: 4px;
+  z-index: 2;
+}
+/* Cards, KPIs and surfaces share one hierarchy across every feature. */
+.g-root
+  :is(
+    .panel,
+    .project-card,
+    .person-card,
+    .personnel-card,
+    .auth-card,
+    .office-stage,
+    .office-inspector,
+    .modal,
+    .notification-panel,
+    .drive-browser
+  ) {
+  background: var(--app-panel);
+  border-color: var(--border);
+  color: var(--g-color-text-primary);
+  border-radius: 12px;
+  box-shadow: var(--app-shadow);
+}
+.g-root
+  :is(.panel, .project-card, .person-card, .personnel-card, .modal, .auth-card)
+  :is(h2, h3, h4) {
+  color: var(--g-color-text-primary);
+  letter-spacing: -0.2px;
+}
+.g-root
+  :is(.panel, .project-card, .person-card, .personnel-card, .modal, .auth-card)
+  p {
+  color: var(--g-color-text-secondary);
+}
+.g-root .kpi {
+  background: var(--app-panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 23px;
+  box-shadow: var(--app-shadow);
+}
+.g-root .kpi-top {
+  color: var(--g-color-text-secondary);
+  font-size: 12px;
+}
+.g-root .kpi > strong {
+  color: var(--g-color-text-primary);
+  font-size: 32px;
+  letter-spacing: -1px;
+  font-weight: 650;
+}
+.g-root .kpi-icon {
+  color: var(--g-color-text-secondary);
+  background: var(--app-subtle);
+  border-radius: 8px;
+}
+.g-root .kpi-note {
+  color: var(--g-color-text-secondary);
+  font-size: 11px;
+}
+.g-root .kpi.dark {
+  background: #24262d;
+  color: white;
+  border-color: #30323b;
+}
+.g-root .kpi.dark > strong {
+  color: #fff;
+}
+.g-root .kpi.dark :is(.kpi-top, .kpi-note) {
+  color: #bdbfc7;
+}
+.g-root .kpi.dark .kpi-icon {
+  background: #ffffff10;
+  color: #ffce85;
+}
+.g-root .panel-heading {
+  border-color: var(--border);
+}
+.g-root .panel-heading h2 {
+  font-size: 16px;
+  font-weight: 600;
+}
+.g-root .panel-heading p,
+.g-root .section-note,
+.g-root .muted {
+  color: var(--g-color-text-secondary);
+}
+.g-root .soft-label,
+.g-root .role-tag {
+  background: var(--app-subtle);
+  color: var(--g-color-text-secondary);
+  border-radius: 5px;
+}
+.g-root .app-progress {
+  width: 100%;
+}
+.g-root .progress-track {
+  background: var(--app-subtle);
+}
+.g-root .progress-track > span {
+  background: var(--g-color-base-brand);
+}
+.g-root .chart-grid i {
+  border-color: var(--border);
+}
+.g-root .chart-plot {
+  border-color: var(--border);
+}
+.g-root .y-labels,
+.g-root .x-label,
+.g-root .chart-footer {
+  color: var(--g-color-text-secondary);
+}
+.g-root .bar {
+  background: #ffbe5c;
+}
+.g-root .bar:nth-child(2) {
+  background: #829af4;
+}
+.g-root
+  :is(
+    .portfolio-content,
+    .project-card-foot,
+    .detail-top,
+    .detail-tabs,
+    .detail-file,
+    .detail-receipt,
+    .person-stats,
+    .person-card-footer
+  ) {
+  border-color: var(--border);
+}
+.g-root .portfolio-content p,
+.g-root .portfolio-panel small {
+  color: var(--g-color-text-secondary);
+}
+.g-root .project-card:hover {
+  border-color: var(--g-color-line-generic-hover);
+  box-shadow: 0 6px 18px #0000000b;
+}
+.g-root .project-card-visual {
+  background: var(--app-subtle);
+}
+.g-root .project-card-body h3 {
+  font-size: 16px;
+}
+.g-root .project-card p,
+.g-root .project-card-foot {
+  color: var(--g-color-text-secondary);
+}
+.g-root .project-card-progress {
+  color: var(--g-color-text-secondary);
+}
+.g-root .project-card-progress b {
+  color: var(--g-color-text-primary);
+}
+.g-root table {
+  color: var(--g-color-text-primary);
+  font-size: 13px;
+}
+.g-root table th {
+  background: var(--app-subtle);
+  color: var(--g-color-text-secondary);
+  font-size: 11px;
+  letter-spacing: 0.2px;
+  padding: 13px 16px;
+  border-color: var(--border);
+}
+.g-root table td {
+  border-color: var(--border);
+  padding: 14px 16px;
+}
+.g-root table tbody tr:hover {
+  background: var(--g-color-base-simple-hover);
+}
+.g-root table td small {
+  color: var(--g-color-text-secondary);
+}
+.g-root .project-name,
+.g-root .task-title,
+.g-root .text-link {
+  color: var(--g-color-text-link);
+}
+.g-root .amount,
+.g-root .right.received {
+  font-variant-numeric: tabular-nums;
+  color: var(--g-color-text-positive);
+}
+.g-root .toolbar,
+.g-root .toolbar select {
+  color: var(--g-color-text-secondary);
+}
+.g-root .toolbar > span,
+.g-root .toolbar small {
+  color: var(--g-color-text-secondary);
+}
+.g-root .document-summary {
+  background: var(--app-active);
+  border-color: var(--border);
+}
+.g-root .document-summary h3 {
+  color: var(--g-color-text-primary);
+}
+.g-root .document-summary p {
+  color: var(--g-color-text-secondary);
+}
+.g-root .drive-icon,
+.g-root .connection-logo {
+  background: var(--app-subtle);
+  color: var(--g-color-text-secondary);
+}
+.g-root .connection-head,
+.g-root .connection-meta,
+.g-root .settings-subhead,
+.g-root .mapping-board,
+.g-root .reset-row {
+  border-color: var(--border);
+}
+.g-root .connection-meta div,
+.g-root .connection-meta span,
+.g-root .settings-subhead p,
+.g-root .mapping-board code {
+  color: var(--g-color-text-secondary);
+}
+.g-root .connection-meta b,
+.g-root .settings-subhead h3 {
+  color: var(--g-color-text-primary);
+}
+.g-root .mapping-board {
+  background: var(--app-subtle);
+  border-radius: 8px;
+}
+.g-root .setup-steps li > span {
+  background: var(--app-active);
+  color: var(--g-color-text-primary);
+}
+.g-root .setup-steps b,
+.g-root .reset-row b {
+  color: var(--g-color-text-primary);
+}
+.g-root .setup-steps p,
+.g-root .reset-row p {
+  color: var(--g-color-text-secondary);
+}
+.g-root .info-box {
+  background: var(--g-color-base-info-light);
+  border: 1px solid var(--g-color-line-info);
+  color: var(--g-color-text-info);
+  border-radius: 8px;
+  font-size: 12px;
+}
+.g-root .info-box svg {
+  color: inherit;
+}
+.g-root .form-error {
+  background: var(--g-color-base-danger-light);
+  color: var(--g-color-text-danger);
+  border: 1px solid var(--g-color-line-danger);
+  border-radius: 8px;
+}
+.g-root .form-error p {
+  color: inherit;
+}
+.g-root .demo-banner {
+  background: var(--g-color-base-warning-light);
+  border-color: var(--g-color-line-warning);
+  color: var(--g-color-text-primary);
+  border-radius: 8px;
+}
+.g-root .demo-tag {
+  background: var(--g-color-base-brand);
+  color: #33271b;
+  letter-spacing: 0.8px;
+}
+.g-root .demo-banner button {
+  color: var(--g-color-text-primary);
+}
+.g-root .demo-tour {
+  border-top: 3px solid var(--g-color-base-brand);
+}
+.g-root .demo-tour > div > button {
+  background: var(--app-subtle);
+  border-color: var(--border);
+  color: var(--g-color-text-primary);
+}
+.g-root .demo-tour button span,
+.g-root .demo-tour > small {
+  color: var(--g-color-text-secondary);
+}
+.g-root .modal {
+  max-width: calc(100vw - 32px);
+  background: var(--app-panel);
+  box-shadow: 0 20px 80px #0003;
+}
+.g-root .modal-head {
+  border-color: var(--border);
+  padding: 24px;
+}
+.g-root .modal-head h2 {
+  font-size: 22px;
+}
+.g-root .modal-head p,
+.g-root .form-note {
+  color: var(--g-color-text-secondary);
+}
+.g-root .form-actions {
+  border-color: var(--border);
+  background: var(--app-panel);
+}
+.g-root .detail-kpis strong {
+  color: var(--g-color-text-primary);
+}
+.g-root .detail-kpis small {
+  color: var(--g-color-text-secondary);
+}
+.g-root .detail-tabs button {
+  color: var(--g-color-text-secondary);
+}
+.g-root .detail-tabs button.active {
+  color: var(--g-color-text-primary);
+  border-color: var(--g-color-base-brand);
+}
+.g-root .detail-file small {
+  color: var(--g-color-text-secondary);
+}
+.g-root .toast {
+  background: var(--g-color-base-contrast);
+  color: var(--g-color-text-inverted-primary);
+  border-radius: 10px;
+  box-shadow: 0 8px 30px #0002;
+}
+.g-root .toast .icon-button {
+  color: inherit;
+}
+/* Personnel and the 3D office keep their data colors with theme-aware surfaces. */
+.g-root .personnel-hero,
+.g-root .office-intro {
+  background: var(--app-active);
+  border: 1px solid var(--g-color-line-brand);
+  border-radius: 12px;
+  color: var(--g-color-text-primary);
+}
+.g-root .personnel-hero h2,
+.g-root .office-intro h2 {
+  color: var(--g-color-text-primary);
+  font-size: 25px;
+}
+.g-root .personnel-hero p,
+.g-root .office-intro p,
+.g-root .personnel-hero-count span {
+  color: var(--g-color-text-secondary);
+}
+.g-root .personnel-hero .eyebrow {
+  color: var(--g-color-text-secondary);
+}
+.g-root .personnel-page label,
+.g-root .office-toolbar label {
+  color: var(--g-color-text-secondary);
+}
+.g-root .personnel-context,
+.g-root .personnel-card small,
+.g-root .personnel-card-note,
+.g-root .office-data-note,
+.g-root .office-source small {
+  color: var(--g-color-text-secondary);
+}
+.g-root .personnel-card {
+  border-top-width: 3px;
+}
+.g-root .personnel-card footer {
+  color: var(--g-color-text-secondary);
+}
+.g-root .personnel-card-metrics {
+  border-color: var(--border);
+}
+.g-root .personnel-org span {
+  background: var(--g-color-base-info-light);
+  color: var(--g-color-text-info);
+}
+.g-root .personnel-org span + span {
+  background: var(--g-color-base-misc-light);
+  color: var(--g-color-text-misc);
+}
+.g-root .personnel-progress {
+  color: var(--g-color-text-secondary);
+}
+.g-root .personnel-progress b {
+  color: var(--g-color-text-primary);
+}
+.g-root .personnel-progress-track {
+  background: var(--app-subtle);
+}
+.g-root .personnel-progress-track i {
+  background: var(--g-color-base-brand);
+}
+.g-root .personnel-tabs {
+  border-color: var(--border);
+}
+.g-root .personnel-tabs button {
+  color: var(--g-color-text-secondary);
+}
+.g-root .personnel-tabs button.active {
+  color: var(--g-color-text-primary);
+  border-color: var(--g-color-base-brand);
+}
+.g-root .personnel-unassigned {
+  background: var(--g-color-base-warning-light);
+  color: var(--g-color-text-warning);
+  border-color: var(--g-color-line-warning);
+}
+.g-root .personnel-kpi.blue {
+  background: var(--g-color-base-info-light);
+  color: var(--g-color-text-info);
+  border-color: var(--g-color-line-info);
+}
+.g-root .personnel-kpi.green {
+  background: var(--g-color-base-positive-light);
+  color: var(--g-color-text-positive);
+  border-color: var(--g-color-line-positive);
+}
+.g-root .personnel-kpi.red {
+  background: var(--g-color-base-danger-light);
+  color: var(--g-color-text-danger);
+  border-color: var(--g-color-line-danger);
+}
+.g-root .personnel-kpi.amber {
+  background: var(--g-color-base-warning-light);
+  color: var(--g-color-text-warning);
+  border-color: var(--g-color-line-warning);
+}
+.g-root .personnel-kpi.purple {
+  background: var(--g-color-base-misc-light);
+  color: var(--g-color-text-misc);
+  border-color: var(--g-color-line-misc);
+}
+.g-root .personnel-status.todo {
+  background: var(--g-color-base-generic);
+  color: var(--g-color-text-secondary);
+}
+.g-root .personnel-status.doing {
+  background: var(--g-color-base-info-light);
+  color: var(--g-color-text-info);
+}
+.g-root .personnel-status.review {
+  background: var(--g-color-base-misc-light);
+  color: var(--g-color-text-misc);
+}
+.g-root .personnel-status.done {
+  background: var(--g-color-base-positive-light);
+  color: var(--g-color-text-positive);
+}
+.g-root .personnel-status.blocked {
+  background: var(--g-color-base-warning-light);
+  color: var(--g-color-text-warning);
+}
+.g-root .personnel-status.overdue {
+  background: var(--g-color-base-danger-light);
+  color: var(--g-color-text-danger);
+}
+.g-root .green-text {
+  color: var(--g-color-text-positive) !important;
+}
+.g-root .red-text,
+.g-root .text-danger {
+  color: var(--g-color-text-danger) !important;
+}
+.g-root .amber-text {
+  color: var(--g-color-text-warning) !important;
+}
+.g-root .office-source {
+  color: var(--g-color-text-primary);
+}
+.g-root .office-stat-strip,
+.g-root .office-stat-strip b {
+  color: var(--g-color-text-secondary);
+}
+.g-root .office-stat-strip .office-blue,
+.g-root .office-stat-strip .office-blue b {
+  color: var(--g-color-text-info);
+}
+.g-root .office-stat-strip .office-red,
+.g-root .office-stat-strip .office-red b {
+  color: var(--g-color-text-danger);
+}
+.g-root .office-stat-strip .office-amber,
+.g-root .office-stat-strip .office-amber b {
+  color: var(--g-color-text-warning);
+}
+.g-root .office-stage > header,
+.g-root .office-stage > footer {
+  border-color: var(--border);
+  color: var(--g-color-text-secondary);
+}
+.g-root .office-inspector > header {
+  background: var(--app-subtle);
+  border-color: var(--border);
+}
+.g-root .office-directory button:hover,
+.g-root .office-directory button.selected {
+  background: var(--app-active);
+  border-color: var(--g-color-line-brand);
+}
+.g-root .office-directory b {
+  color: var(--g-color-text-primary);
+}
+.g-root .office-directory small,
+.g-root .office-directory h4,
+.g-root .office-task-list small {
+  color: var(--g-color-text-secondary);
+}
+.g-root .office-task-list article {
+  border-color: var(--border);
+}
+.g-root .office-task-progress {
+  background: var(--app-subtle);
+}
+.g-root .office-task-progress i {
+  background: var(--g-color-base-brand);
+}
+.g-root .office-data-note {
+  background: var(--app-subtle);
+}
+.g-root .office-legend {
+  color: var(--g-color-text-secondary);
+}
+.g-root .office-scene-hint {
+  background: var(--app-subtle);
+  color: var(--g-color-text-secondary);
+}
+.g-root .auth-screen,
+.g-root .loading-screen {
+  background: var(--app-canvas);
+  color: var(--g-color-text-primary);
+}
+.g-root .auth-card {
+  position: relative;
+  padding: 32px;
+  border-top: 4px solid var(--g-color-base-brand);
+}
+.g-root .auth-card h1 {
+  font-size: 28px;
+}
+.g-root .auth-card label,
+.g-root .account-settings label {
+  color: var(--g-color-text-secondary);
+  font-weight: 500;
+}
+.g-root .auth-card > svg {
+  color: var(--g-color-text-primary);
+}
+.g-root .auth-theme-switch {
+  position: absolute;
+  right: 20px;
+  top: 20px;
+}
+.g-root .auth-card small {
+  display: block;
+  margin-top: 18px;
+  color: var(--g-color-text-secondary);
+}
+.g-root .account-settings form + form {
+  border-color: var(--border);
+}
+.g-root .footer {
+  border-color: var(--border);
+  color: var(--g-color-text-secondary);
+}
+.g-root .footer-logo {
+  border-color: var(--border);
+  color: var(--g-color-text-secondary);
+}
+@media (max-width: 900px) {
+  .g-root .sidebar {
+    width: 244px;
+    transform: translateX(-110%);
+    padding: 20px 14px 0;
+    box-shadow: none;
+  }
+  .g-root .sidebar.open {
+    transform: translateX(0);
+    box-shadow: 12px 0 40px #0002;
+  }
+  .g-root .sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    background: #0005;
+    backdrop-filter: blur(2px);
+  }
+  .g-root .main-shell {
+    margin-left: 0;
+  }
+  .g-root .mobile-menu {
+    display: inline-flex;
+  }
+  .g-root .topbar {
+    padding: 0 18px;
+  }
+  .g-root .breadcrumb > span,
+  .g-root .breadcrumb > svg {
+    display: none;
+  }
+}
+@media (max-width: 600px) {
+  .g-root main:not(.auth-screen) {
+    padding-top: 22px;
+  }
+  .g-root .page-heading h1 {
+    font-size: 24px;
+  }
+  .g-root .topbar {
+    gap: 10px;
+  }
+  .g-root .mode-label {
+    font-size: 10px;
+  }
+  .g-root .topbar-right {
+    gap: 8px;
+  }
+  .g-root .kpi > strong {
+    font-size: 28px;
+  }
+  .g-root .personnel-hero h2,
+  .g-root .office-intro h2 {
+    font-size: 22px;
+  }
+  .g-root .modal-head {
+    padding: 20px;
+  }
+  .g-root .gravity-control.g-button {
+    font-size: 12px;
+  }
+}
+/* Readable table typography and supporting data in both themes. */
+.g-root .gravity-control.g-button {
+  padding: 0 14px;
+}
+.g-root .gravity-control.g-button.small {
+  padding: 0 10px;
+}
+.g-root .gravity-control.g-button.icon-button {
+  padding: 0;
+}
+.g-root .data-table td {
+  font-size: 12px;
+  color: var(--g-color-text-primary);
+}
+.g-root .data-table td > b,
+.g-root .project-name b {
+  color: var(--g-color-text-primary);
+  font-size: 12px;
+}
+.g-root .project-name small,
+.g-root .data-table td > small {
+  color: var(--g-color-text-secondary);
+  font-size: 10px;
+}
+.g-root .person-inline,
+.g-root .progress-cell > span {
+  font-size: 12px;
+  color: var(--g-color-text-secondary);
+}
+.g-root .project-summary-strip {
+  color: var(--g-color-text-secondary);
+}
+.g-root .project-summary-strip b {
+  color: var(--g-color-text-primary);
+}
+.g-root .task-meta,
+.g-root .quick-item small,
+.g-root .quick-link small {
+  color: var(--g-color-text-secondary);
+}
+.g-root .task-row,
+.g-root .quick-item,
+.g-root .quick-link {
+  border-color: var(--border);
+}
+.g-root .quick-item strong,
+.g-root .quick-link b {
+  color: var(--g-color-text-primary);
+}
+.g-root .alert-count {
+  background: var(--g-color-base-warning-light);
+  color: var(--g-color-text-warning);
+}
+.g-root .chart-footer,
+.g-root .chart-grid,
+.g-root .portfolio-panel > .text-link {
+  border-color: var(--border);
+}
+.g-root .portfolio-legend,
+.g-root .portfolio-legend span,
+.g-root .portfolio-legend b {
+  color: var(--g-color-text-secondary);
+}
+.g-root .portfolio-total strong {
+  color: var(--g-color-text-primary);
+}
+.g-root .donut-legend > div,
+.g-root .donut-legend b,
+.g-root .donut span {
+  color: var(--g-color-text-secondary);
+}
+.g-root .donut strong {
+  color: var(--g-color-text-primary);
+}
+.g-root .quick-item > span {
+  background: var(--app-subtle);
+  color: var(--g-color-text-secondary);
+}
+.g-root .form-actions {
+  padding-top: 20px;
+}
+.g-root .g-button__text {
+  line-height: normal;
+}
+.g-root_theme_light {
+  color-scheme: light;
+}
+.g-root_theme_dark {
+  color-scheme: dark;
+}
+.g-root .badge {
+  background: var(--g-color-base-generic);
+  color: var(--g-color-text-secondary);
+  font-size: 11px;
+  padding: 5px 8px;
+  border-radius: 5px;
+}
+.g-root .badge.completed,
+.g-root .badge.ontrack {
+  background: var(--g-color-base-positive-light);
+  color: var(--g-color-text-positive);
+}
+.g-root .badge.late {
+  background: var(--g-color-base-danger-light);
+  color: var(--g-color-text-danger);
+}
+.g-root .badge.risk {
+  background: var(--g-color-base-warning-light);
+  color: var(--g-color-text-warning);
+}
+.g-root .badge.paused {
+  background: var(--g-color-base-generic);
+  color: var(--g-color-text-secondary);
+}
+.g-root code,
+.g-root .reference {
+  background: var(--app-subtle);
+  color: var(--g-color-text-secondary);
+}
+.g-root .received {
+  color: var(--g-color-text-positive) !important;
+}
+.g-root .file-icon {
+  background: var(--g-color-base-info-light);
+  color: var(--g-color-text-info);
+}
+.g-root select,
+.g-root .gravity-native-input:not([type="checkbox"]),
+.g-root .entry-form select {
+  min-height: 36px;
+  padding: 7px 12px;
+}
+.g-root_theme_light {
+  --g-color-text-link: #2167bd;
+  --g-color-text-link-hover: #174f95;
+}
+.g-root_theme_dark {
+  --g-color-text-link: #88b9f6;
+  --g-color-text-link-hover: #b7d7ff;
+}
+.g-root .code {
+  background: var(--app-subtle);
+  color: var(--g-color-text-secondary);
+  border-color: var(--border);
+}
+.g-root .detail-receipt b {
+  color: var(--g-color-text-primary);
+}
+.g-root .detail-receipt small {
+  color: var(--g-color-text-secondary);
+}
+.g-root .modal .task-meta,
+.g-root .modal .detail-file span {
+  color: var(--g-color-text-secondary);
+}

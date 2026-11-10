@@ -1,4 +1,12 @@
-import React, { useEffect, useRef } from "react";
+import {
+  Modal as GravityModal,
+  Label as GravityLabel,
+  Progress as GravityProgress,
+  Card,
+  Text,
+} from "@gravity-ui/uikit";
+import { UiButton } from "./ui";
+import React from "react";
 import { X, ArrowUpRight, Check, ChevronDown } from "lucide-react";
 import { healthLabels, money } from "../shared/metrics";
 import type { Person } from "../shared/types";
@@ -33,23 +41,34 @@ export function Avatar({
   );
 }
 export function Badge({ status }: { status: keyof typeof healthLabels }) {
+  const theme =
+    status === "ontrack" || status === "completed"
+      ? "success"
+      : status === "late"
+        ? "danger"
+        : status === "risk"
+          ? "warning"
+          : "normal";
   return (
-    <span className={"badge " + status}>
-      <i />
+    <GravityLabel theme={theme} size="s">
       {healthLabels[status]}
-    </span>
+    </GravityLabel>
   );
 }
 export function Progress({ value, color }: { value: number; color?: string }) {
   return (
-    <div className="progress-track">
-      <span
-        style={{
-          width: Math.max(0, Math.min(100, value)) + "%",
-          background: color,
-        }}
-      />
-    </div>
+    <GravityProgress
+      className="app-progress"
+      value={Math.max(0, Math.min(100, value))}
+      size="s"
+      colorStops={[
+        {
+          stop: 0,
+          theme: "default",
+          color: color || "var(--g-color-base-brand)",
+        },
+      ]}
+    />
   );
 }
 export function Empty({
@@ -83,63 +102,29 @@ export function Modal({
   children: React.ReactNode;
   wide?: boolean;
 }) {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const prev = document.activeElement as HTMLElement;
-    document.body.style.overflow = "hidden";
-    const root = ref.current;
-    root?.querySelector<HTMLElement>("input,select,button")?.focus();
-    const key = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-      if (e.key === "Tab" && root) {
-        const els = [
-          ...root.querySelectorAll<HTMLElement>(
-            'button:not(:disabled),input:not(:disabled),select:not(:disabled),a[href],textarea:not(:disabled),[tabindex="0"]',
-          ),
-        ].filter((el) => el.offsetParent !== null);
-        if (!els.length) return;
-        if (e.shiftKey && document.activeElement === els[0]) {
-          e.preventDefault();
-          els.at(-1)?.focus();
-        } else if (!e.shiftKey && document.activeElement === els.at(-1)) {
-          e.preventDefault();
-          els[0].focus();
-        }
-      }
-    };
-    document.addEventListener("keydown", key);
-    return () => {
-      document.body.style.overflow = "";
-      document.removeEventListener("keydown", key);
-      prev?.focus();
-    };
-  }, []);
   return (
-    <div
-      className="modal-backdrop"
-      onMouseDown={(e) => {
-        if (e.target === e.currentTarget) onClose();
+    <GravityModal
+      open
+      onOpenChange={(open) => {
+        if (!open) onClose();
       }}
+      aria-label={title}
+      contentClassName={"modal " + (wide ? "wide" : "")}
+      disableVisuallyHiddenDismiss
     >
-      <div
-        ref={ref}
-        className={"modal " + (wide ? "wide" : "")}
-        role="dialog"
-        aria-modal="true"
-        aria-label={title}
-      >
-        <div className="modal-head">
-          <div>
-            <h2>{title}</h2>
-            {subtitle && <p>{subtitle}</p>}
-          </div>
-          <button className="icon-button" aria-label="Đóng" onClick={onClose}>
-            <X size={21} />
-          </button>
+      <div className="modal-head">
+        <div>
+          <Text as="h2" variant="header-1">
+            {title}
+          </Text>
+          {subtitle && <p>{subtitle}</p>}
         </div>
-        {children}
+        <UiButton className="icon-button" aria-label="Đóng" onClick={onClose}>
+          <X size={21} />
+        </UiButton>
       </div>
-    </div>
+      {children}
+    </GravityModal>
   );
 }
 export function Field({
@@ -173,14 +158,14 @@ export function Kpi({
   dark?: boolean;
 }) {
   return (
-    <div className={"kpi " + (dark ? "dark" : "")}>
+    <Card className={"kpi " + (dark ? "dark" : "")} type="container">
       <div className="kpi-top">
         <span>{label}</span>
         <span className="kpi-icon">{icon}</span>
       </div>
       <strong>{value}</strong>
       <div className="kpi-note">{note}</div>
-    </div>
+    </Card>
   );
 }
 export function Amount({ value }: { value: number }) {
@@ -194,9 +179,9 @@ export function Submit({
   label?: string;
 }) {
   return (
-    <button className="button primary" type="submit" disabled={busy}>
+    <UiButton className="button primary" type="submit" disabled={busy}>
       {busy ? <span className="spinner" /> : <Check size={16} />}{" "}
       {busy ? "Đang lưu…" : label}
-    </button>
+    </UiButton>
   );
 }

@@ -1,3 +1,5 @@
+import { ThemeSwitch } from "./theme";
+import { UiButton, UiInput, UiTextArea } from "./ui";
 import { useEffect, useState, type FormEvent } from "react";
 import { Building2 } from "lucide-react";
 import { request } from "./api";
@@ -44,6 +46,9 @@ export function Login() {
   return (
     <main className="auth-screen">
       <section className="auth-card">
+        <div className="auth-theme-switch">
+          <ThemeSwitch />
+        </div>
         <Building2 size={36} />
         <h1>Công Trình</h1>
         <h2>
@@ -65,7 +70,7 @@ export function Login() {
           {status?.setupRequired && (
             <label>
               Họ tên
-              <input
+              <UiInput
                 autoComplete="name"
                 required
                 maxLength={100}
@@ -76,7 +81,7 @@ export function Login() {
           )}
           <label>
             Email
-            <input
+            <UiInput
               type="email"
               autoComplete="username"
               required
@@ -87,7 +92,7 @@ export function Login() {
           </label>
           <label>
             Mật khẩu
-            <input
+            <UiInput
               type="password"
               autoComplete={
                 status?.setupRequired ? "new-password" : "current-password"
@@ -102,7 +107,7 @@ export function Login() {
           {status?.setupRequired && (
             <label>
               Mã khởi tạo
-              <input
+              <UiInput
                 type="password"
                 autoComplete="off"
                 required
@@ -117,7 +122,7 @@ export function Login() {
               {error}
             </div>
           )}
-          <button
+          <UiButton
             className="button primary"
             disabled={
               busy || !status || (status.setupRequired && !status.setupEnabled)
@@ -128,16 +133,16 @@ export function Login() {
               : status?.setupRequired
                 ? "Tạo quản trị và đăng nhập"
                 : "Đăng nhập"}
-          </button>
+          </UiButton>
         </form>
         <a className="button" href="/?demo=1">
           Khám phá bản demo
         </a>
         <small>Quên mật khẩu? Liên hệ quản trị viên để được cấp lại.</small>
         {!!error && !status && (
-          <button className="button" onClick={() => location.reload()}>
+          <UiButton className="button" onClick={() => location.reload()}>
             Thử lại
-          </button>
+          </UiButton>
         )}
       </section>
     </main>
@@ -203,7 +208,7 @@ export function AccountSettings({
         <h3>Đổi mật khẩu của bạn</h3>
         <label>
           Mật khẩu hiện tại
-          <input
+          <UiInput
             type="password"
             autoComplete="current-password"
             required
@@ -214,7 +219,7 @@ export function AccountSettings({
         </label>
         <label>
           Mật khẩu mới (ít nhất 12 ký tự)
-          <input
+          <UiInput
             type="password"
             autoComplete="new-password"
             required
@@ -224,9 +229,9 @@ export function AccountSettings({
             onChange={(e) => setPassword(e.target.value)}
           />
         </label>
-        <button className="button" disabled={busy}>
+        <UiButton className="button" disabled={busy}>
           Đổi mật khẩu
-        </button>
+        </UiButton>
       </form>
       {user.role === "admin" && (
         <form onSubmit={(e) => save(e, true)}>
@@ -258,7 +263,7 @@ export function AccountSettings({
           </label>
           <label>
             Mật khẩu cấp cho nhân sự
-            <input
+            <UiInput
               type="password"
               autoComplete="new-password"
               required
@@ -268,9 +273,9 @@ export function AccountSettings({
               onChange={(e) => setMemberPassword(e.target.value)}
             />
           </label>
-          <button className="button" disabled={busy || !member}>
+          <UiButton className="button" disabled={busy || !member}>
             Cấp mật khẩu
-          </button>
+          </UiButton>
         </form>
       )}
       {error && (

@@ -1,3 +1,4 @@
+import { UiButton, UiInput, UiTextArea } from "./ui";
 import { demoPersonnelReport } from "../shared/demo";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -212,7 +213,7 @@ export default function Personnel({
       <section className="personnel-filters panel" aria-label="Bộ lọc nhân sự">
         <label>
           Ngày báo cáo
-          <input
+          <UiInput
             aria-label="Ngày báo cáo"
             type="date"
             value={day}
@@ -279,29 +280,29 @@ export default function Personnel({
         </label>
         <label>
           Tìm kiếm
-          <input
+          <UiInput
             aria-label="Tìm nhân sự"
             placeholder="Tên, chuyên môn…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </label>
-        <button
+        <UiButton
           className="button"
           disabled={loading}
           onClick={() => setVersion((v) => v + 1)}
         >
           <RefreshCw size={15} />
           Tải lại
-        </button>
-        <button
+        </UiButton>
+        <UiButton
           className="button"
           disabled={!report || report.source === "missing" || loading}
           onClick={exportCsv}
         >
           <Download size={15} />
           Xuất CSV
-        </button>
+        </UiButton>
       </section>
       <div className="personnel-context">
         {session.mode === "demo"
@@ -382,13 +383,13 @@ export default function Personnel({
               ["tasks", "Theo dõi công việc"],
               ["reports", "Báo cáo ngày"],
             ].map(([key, label]) => (
-              <button
+              <UiButton
                 key={key}
                 className={tab === key ? "active" : ""}
                 onClick={() => setTab(key)}
               >
                 {label}
-              </button>
+              </UiButton>
             ))}
           </nav>
           {tab === "overview" && (
@@ -421,13 +422,13 @@ export default function Personnel({
                           </small>
                         </div>
                         {admin && (
-                          <button
+                          <UiButton
                             className="icon-button"
                             aria-label={"Sửa nhân sự " + p.name}
                             onClick={() => onEdit(p)}
                           >
                             <Pencil size={16} />
-                          </button>
+                          </UiButton>
                         )}
                       </header>
                       <div className="personnel-org">
@@ -486,7 +487,7 @@ export default function Personnel({
                         {m.estimated}h dự kiến còn mở · Năng lực {p.capacity}
                         h/tuần
                       </p>
-                      <button
+                      <UiButton
                         className="button small"
                         onClick={() => {
                           setMember(p.id);
@@ -494,7 +495,7 @@ export default function Personnel({
                         }}
                       >
                         Xem công việc
-                      </button>
+                      </UiButton>
                     </article>
                   );
                 })}
@@ -547,12 +548,12 @@ export default function Personnel({
                         <td>
                           <strong>{t.title}</strong>
                           {(admin || manager) && day === localDate() && (
-                            <button
+                            <UiButton
                               className="button small"
                               onClick={() => onEditTask(t)}
                             >
                               Cập nhật task
-                            </button>
+                            </UiButton>
                           )}
                           <small>
                             {w.projects.find((p) => p.id === t.projectId)

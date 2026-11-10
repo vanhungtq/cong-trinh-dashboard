@@ -1,3 +1,5 @@
+import { ThemeSwitch } from "./theme";
+import { UiButton, UiInput, UiTextArea } from "./ui";
 import { lazy, Suspense } from "react";
 const VirtualOffice = lazy(() => import("./VirtualOffice"));
 import { demoBoards } from "../shared/demo";
@@ -456,9 +458,9 @@ export default function App() {
         {loadError ? (
           <>
             <p className="form-error">{loadError}</p>
-            <button className="button" onClick={() => location.reload()}>
+            <UiButton className="button" onClick={() => location.reload()}>
               Thử lại
-            </button>
+            </UiButton>
           </>
         ) : (
           <>
@@ -539,7 +541,7 @@ export default function App() {
           {projects.map((p) => (
             <tr key={p.id} onClick={() => openProject(p.id)}>
               <td>
-                <button
+                <UiButton
                   className="project-name"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -559,7 +561,7 @@ export default function App() {
                       <i /> {compact ? p.phase : p.client}
                     </small>
                   </span>
-                </button>
+                </UiButton>
               </td>
               <td>
                 <div className="person-inline">
@@ -612,7 +614,7 @@ export default function App() {
             {t.status === "done" ? <Check size={13} /> : null}
           </span>
           <div className="task-content">
-            <button
+            <UiButton
               className="text-button task-title"
               onClick={() => {
                 setNotifications(false);
@@ -621,7 +623,7 @@ export default function App() {
               }}
             >
               {t.title}
-            </button>
+            </UiButton>
             <div className="task-meta">
               <span>{project(t.projectId)?.code}</span>
               <span>{taskLabels[t.status]}</span>
@@ -634,14 +636,14 @@ export default function App() {
           <span className={"task-date " + (isOverdue(t) ? "text-danger" : "")}>
             {dateLabel(t.due)}
           </span>
-          <button
+          <UiButton
             className="icon-button"
             title="Mở thẻ Trello"
             aria-label={"Mở thẻ " + t.title}
             onClick={() => openUrl(t.url)}
           >
             <ArrowUpRight size={16} />
-          </button>
+          </UiButton>
         </div>
       ))}
       {!tasks.length && (
@@ -686,7 +688,7 @@ export default function App() {
           {nav
             .filter((n) => n.id !== "finance" || finance)
             .map((n) => (
-              <button
+              <UiButton
                 key={n.id}
                 className={"nav-item " + (page === n.id ? "active" : "")}
                 onClick={() => changePage(n.id)}
@@ -694,7 +696,7 @@ export default function App() {
                 <n.icon size={19} />
                 <span>{pageNames[n.id]}</span>
                 {n.id === "projects" && <em>{w.projects.length}</em>}
-              </button>
+              </UiButton>
             ))}
         </nav>
         <div className="sidebar-bottom">
@@ -704,19 +706,19 @@ export default function App() {
             <p>Tiến độ, con người và dòng tiền trong cùng một nơi.</p>
             <Architecture />
           </div>
-          <button
+          <UiButton
             className={"nav-item " + (page === "settings" ? "active" : "")}
             onClick={() => changePage("settings")}
           >
             <Settings2 size={19} />
             <span>Kết nối & cài đặt</span>
-          </button>
-          <button className="nav-item" onClick={() => setHelp(true)}>
+          </UiButton>
+          <UiButton className="nav-item" onClick={() => setHelp(true)}>
             <CircleHelp size={19} />
             <span>Hướng dẫn sử dụng</span>
-          </button>
+          </UiButton>
           {session.mode === "live" && authMode === "password" && (
-            <button
+            <UiButton
               className="nav-item"
               disabled={busy}
               onClick={async () => {
@@ -734,7 +736,7 @@ export default function App() {
               }}
             >
               Đăng xuất
-            </button>
+            </UiButton>
           )}
           <a
             className="nav-item"
@@ -755,30 +757,31 @@ export default function App() {
       <div className="main-shell">
         <header className="topbar">
           <div className="breadcrumb">
-            <button
+            <UiButton
               className="icon-button mobile-menu"
               aria-label="Mở menu"
               onClick={() => setMobile(true)}
             >
               <Menu size={22} />
-            </button>
+            </UiButton>
             <span>Không gian làm việc</span>
             <ChevronRight size={14} />
             <b>{pageNames[page]}</b>
           </div>
           <div className="topbar-right">
+            <ThemeSwitch />
             <span className={"mode-label " + session.mode}>
               <i />
               {session.mode === "demo" ? "Dữ liệu mẫu" : "Đang hoạt động"}
             </span>
-            <button
+            <UiButton
               className="notification-button icon-button"
               aria-label="Xem cảnh báo"
               onClick={() => setNotifications(true)}
             >
               <Bell size={19} />
               {overdue.length > 0 && <i />}
-            </button>
+            </UiButton>
             <div className="topbar-divider" />
             <Avatar person={session.user} size={32} />
           </div>
@@ -814,42 +817,42 @@ export default function App() {
             </div>
             <div className="heading-actions">
               {page === "overview" ? (
-                <button className="button" disabled={busy} onClick={sync}>
+                <UiButton className="button" disabled={busy} onClick={sync}>
                   <RefreshCw size={16} className={busy ? "spin" : ""} />
                   {busy ? "Đang đồng bộ" : "Đồng bộ Trello"}
-                </button>
+                </UiButton>
               ) : page === "projects" && admin ? (
-                <button
+                <UiButton
                   className="button primary"
                   onClick={() => setForm({ kind: "project" })}
                 >
                   <Plus size={17} />
                   Tạo dự án
-                </button>
+                </UiButton>
               ) : page === "finance" && canMoney ? (
-                <button
+                <UiButton
                   className="button primary"
                   onClick={() => setForm({ kind: "receipt" })}
                 >
                   <Plus size={17} />
                   Ghi nhận thanh toán
-                </button>
+                </UiButton>
               ) : page === "documents" && session.user.role !== "finance" ? (
-                <button
+                <UiButton
                   className="button primary"
                   onClick={() => setForm({ kind: "document" })}
                 >
                   <Plus size={17} />
                   Thêm hồ sơ
-                </button>
+                </UiButton>
               ) : page === "team" && admin ? (
-                <button
+                <UiButton
                   className="button primary"
                   onClick={() => setForm({ kind: "member" })}
                 >
                   <Plus size={17} />
                   Thêm thành viên
-                </button>
+                </UiButton>
               ) : null}
             </div>
           </div>
@@ -859,9 +862,9 @@ export default function App() {
                 <span className="demo-tag">DEMO</span>Bạn đang xem dữ liệu minh
                 họa. Thay đổi chỉ được lưu trên trình duyệt này.
               </span>
-              <button onClick={() => changePage("settings")}>
+              <UiButton onClick={() => changePage("settings")}>
                 Kết nối dữ liệu thật <ArrowRight size={14} />
-              </button>
+              </UiButton>
             </div>
           )}
           {page === "office" && (
@@ -918,11 +921,14 @@ export default function App() {
                         "Xem cấu hình Trello/Drive và ánh xạ cột. Các kết nối mẫu không gọi tài khoản thật.",
                       ],
                     ].map(([key, title, note]) => (
-                      <button key={key} onClick={() => changePage(key as Page)}>
+                      <UiButton
+                        key={key}
+                        onClick={() => changePage(key as Page)}
+                      >
                         <b>{title}</b>
                         <span>{note}</span>
                         <ArrowRight size={16} />
-                      </button>
+                      </UiButton>
                     ))}
                   </div>
                   <small>
@@ -1065,12 +1071,12 @@ export default function App() {
                     <Activity size={18} className="muted" />
                   </div>
                   <Portfolio w={w} />
-                  <button
+                  <UiButton
                     className="text-link"
                     onClick={() => changePage("projects")}
                   >
                     Xem tất cả dự án <ArrowRight size={15} />
-                  </button>
+                  </UiButton>
                 </section>
               </div>
               <section className="panel">
@@ -1082,12 +1088,12 @@ export default function App() {
                     </h2>
                     <p>Tiến độ được tính theo trọng số công việc</p>
                   </div>
-                  <button
+                  <UiButton
                     className="text-link"
                     onClick={() => changePage("projects")}
                   >
                     Tất cả dự án <ArrowUpRight size={16} />
-                  </button>
+                  </UiButton>
                 </div>
                 {projectTable(w.projects.slice(0, 5), true)}
               </section>
@@ -1142,7 +1148,7 @@ export default function App() {
                       page: "team",
                     },
                   ].map((x) => (
-                    <button
+                    <UiButton
                       className="quick-item"
                       key={x.page}
                       onClick={() => changePage(x.page as Page)}
@@ -1155,7 +1161,7 @@ export default function App() {
                         <small>{x.text}</small>
                       </div>
                       <ChevronRight size={16} />
-                    </button>
+                    </UiButton>
                   ))}
                 </section>
               </div>
@@ -1203,14 +1209,14 @@ export default function App() {
                     </option>
                   ))}
                 </select>
-                <button className="button" onClick={exportProjects}>
+                <UiButton className="button" onClick={exportProjects}>
                   <Download size={16} />
                   Xuất CSV
-                </button>
+                </UiButton>
               </div>
               <div className="project-cards">
                 {filteredProjects.map((p, i) => (
-                  <button
+                  <UiButton
                     className="project-card"
                     key={p.id}
                     onClick={() => openProject(p.id)}
@@ -1248,7 +1254,7 @@ export default function App() {
                         </span>
                       </div>
                     </div>
-                  </button>
+                  </UiButton>
                 ))}
               </div>
               {!filteredProjects.length && (
@@ -1298,13 +1304,13 @@ export default function App() {
                     </p>
                   </div>
                   {canMoney && (
-                    <button
+                    <UiButton
                       className="button small"
                       onClick={() => setForm({ kind: "term" })}
                     >
                       <Plus size={15} />
                       Thêm đợt
-                    </button>
+                    </UiButton>
                   )}
                 </div>
                 <div className="table-scroll">
@@ -1373,7 +1379,7 @@ export default function App() {
                       · {filteredReceipts.length} giao dịch trong bộ lọc
                     </p>
                   </div>
-                  <button
+                  <UiButton
                     className="button small"
                     onClick={() =>
                       downloadCsv("thu-tien.csv", [
@@ -1390,7 +1396,7 @@ export default function App() {
                   >
                     <Download size={15} />
                     Xuất CSV
-                  </button>
+                  </UiButton>
                 </div>
                 <div className="toolbar inset">
                   <SearchBox
@@ -1441,12 +1447,12 @@ export default function App() {
                         <tr key={r.id}>
                           <td>{dateLabel(r.date)}</td>
                           <td>
-                            <button
+                            <UiButton
                               className="text-button"
                               onClick={() => openProject(r.projectId)}
                             >
                               {project(r.projectId)?.name}
-                            </button>
+                            </UiButton>
                           </td>
                           <td>
                             <span className="code">{r.reference}</span>
@@ -1541,7 +1547,7 @@ export default function App() {
                       {filteredDocs.map((d) => (
                         <tr key={d.id}>
                           <td>
-                            <button
+                            <UiButton
                               className="file-name"
                               onClick={() => openUrl(d.url)}
                             >
@@ -1549,15 +1555,15 @@ export default function App() {
                                 <FileText size={20} />
                               </span>
                               <b>{d.name}</b>
-                            </button>
+                            </UiButton>
                           </td>
                           <td>
-                            <button
+                            <UiButton
                               className="text-button"
                               onClick={() => openProject(d.projectId)}
                             >
                               {project(d.projectId)?.code}
-                            </button>
+                            </UiButton>
                           </td>
                           <td>{d.category}</td>
                           <td>
@@ -1577,13 +1583,13 @@ export default function App() {
                           </td>
                           <td>{dateLabel(d.updatedAt)}</td>
                           <td>
-                            <button
+                            <UiButton
                               className="icon-button"
                               aria-label={"Mở " + d.name}
                               onClick={() => openUrl(d.url)}
                             >
                               <ArrowUpRight size={17} />
-                            </button>
+                            </UiButton>
                           </td>
                         </tr>
                       ))}
@@ -1646,14 +1652,14 @@ export default function App() {
                   {w.settings.syncError && (
                     <div className="form-error">{w.settings.syncError}</div>
                   )}
-                  <button
+                  <UiButton
                     className="button"
                     disabled={busy || !admin}
                     onClick={sync}
                   >
                     <RefreshCw size={16} className={busy ? "spin" : ""} />
                     Đồng bộ ngay
-                  </button>
+                  </UiButton>
                 </section>
                 <section className="panel settings-card">
                   <div className="connection-head">
@@ -1689,13 +1695,13 @@ export default function App() {
                       <dd>Theo tài khoản Drive</dd>
                     </div>
                   </dl>
-                  <button
+                  <UiButton
                     className="button"
                     onClick={() => changePage("documents")}
                   >
                     <FolderOpen size={16} />
                     Mở danh mục hồ sơ
-                  </button>
+                  </UiButton>
                 </section>
               </div>
               <section className="panel settings-card">
@@ -1711,7 +1717,7 @@ export default function App() {
                   <ShieldCheck size={21} />
                 </div>
                 <Field label="Tên công ty">
-                  <input
+                  <UiInput
                     value={company}
                     disabled={!admin}
                     onChange={(e) => setCompany(e.target.value)}
@@ -1725,7 +1731,7 @@ export default function App() {
                       Dashboard. Mỗi bảng tương ứng một dự án.
                     </p>
                   </div>
-                  <button
+                  <UiButton
                     className="button small"
                     disabled={!admin || busy || session.mode === "demo"}
                     onClick={async () => {
@@ -1749,7 +1755,7 @@ export default function App() {
                   >
                     <RefreshCw size={15} />
                     Tải Workspace
-                  </button>
+                  </UiButton>
                 </div>
                 {session.mode === "demo" && (
                   <div className="info-box">
@@ -1792,7 +1798,7 @@ export default function App() {
                       ))}
                     </select>
                   </Field>
-                  <button
+                  <UiButton
                     className="button small"
                     disabled={
                       !admin ||
@@ -1838,7 +1844,7 @@ export default function App() {
                   >
                     <RefreshCw size={15} />
                     Tải bảng trong Workspace
-                  </button>
+                  </UiButton>
                 </div>
                 {!!boards.length && (
                   <div className="settings-subhead">
@@ -1925,7 +1931,7 @@ export default function App() {
                         </p>
                         <div className="trello-workspace-controls">
                           <Field label="Ngày bắt đầu dự án mới">
-                            <input
+                            <UiInput
                               type="date"
                               value={importStart}
                               disabled={busy}
@@ -1933,7 +1939,7 @@ export default function App() {
                             />
                           </Field>
                           <Field label="Hạn bàn giao dự án mới">
-                            <input
+                            <UiInput
                               type="date"
                               value={importDue}
                               disabled={busy}
@@ -1944,7 +1950,7 @@ export default function App() {
                         </div>
                       </>
                     )}
-                    <button
+                    <UiButton
                       className="button primary"
                       disabled={
                         busy ||
@@ -2032,15 +2038,15 @@ export default function App() {
                     >
                       <Check size={16} />
                       Lưu bảng & ánh xạ
-                    </button>
-                    <button
+                    </UiButton>
+                    <UiButton
                       className="button"
                       disabled={busy || !w.projects.some((p) => p.boardId)}
                       onClick={sync}
                     >
                       <RefreshCw size={16} />
                       Đồng bộ ngay
-                    </button>
+                    </UiButton>
                     <p>
                       Đồng bộ lấy công việc từ tất cả dự án đã gắn bảng Trello,
                       kể cả bảng thuộc Workspace khác.
@@ -2068,7 +2074,7 @@ export default function App() {
                   </div>
                 )}
                 {admin && (
-                  <button
+                  <UiButton
                     className="button primary"
                     disabled={busy}
                     onClick={async () => {
@@ -2110,7 +2116,7 @@ export default function App() {
                   >
                     <Check size={16} />
                     Lưu cấu hình
-                  </button>
+                  </UiButton>
                 )}
               </section>
               {session.mode === "live" && authMode === "password" && (
@@ -2167,12 +2173,12 @@ export default function App() {
                         Xóa những thay đổi của bản dùng thử trên thiết bị này.
                       </p>
                     </div>
-                    <button
+                    <UiButton
                       className="button"
                       onClick={() => setResetConfirm(true)}
                     >
                       Khôi phục demo
-                    </button>
+                    </UiButton>
                   </div>
                 )}
               </section>
@@ -2196,13 +2202,13 @@ export default function App() {
         <div className="toast" role="status">
           <Check size={17} />
           <span>{toast}</span>
-          <button
+          <UiButton
             className="icon-button"
             aria-label="Đóng thông báo"
             onClick={() => setToast("")}
           >
             <X size={15} />
-          </button>
+          </UiButton>
         </div>
       )}
       {form && (
@@ -2245,14 +2251,14 @@ export default function App() {
               <Badge status={projectHealth(selected, tasksFor(selected.id))} />
               <span>{selected.phase}</span>
               {admin && (
-                <button
+                <UiButton
                   className="text-link"
                   onClick={() =>
                     setForm({ kind: "project", initial: selected })
                   }
                 >
                   Chỉnh sửa
-                </button>
+                </UiButton>
               )}
             </div>
             <div className="detail-kpis">
@@ -2309,15 +2315,15 @@ export default function App() {
                 ["files", "Hồ sơ"],
                 ...(finance ? [["finance", "Thanh toán"]] : []),
               ].map(([id, label]) => (
-                <button
+                <UiButton
                   key={id}
                   className={detailTab === id ? "active" : ""}
                   onClick={() => setDetailTab(id)}
                 >
                   {label}
-                </button>
+                </UiButton>
               ))}
-              <button
+              <UiButton
                 className="text-link"
                 onClick={() =>
                   openUrl(
@@ -2329,7 +2335,7 @@ export default function App() {
                 }
               >
                 Mở Trello <ExternalLink size={13} />
-              </button>
+              </UiButton>
             </div>
             {detailTab === "tasks" && taskList(tasksFor(selected.id))}
             {detailTab === "files" && (
@@ -2343,17 +2349,17 @@ export default function App() {
                     hồ sơ trong danh mục
                   </span>
                   {canManage && (
-                    <button
+                    <UiButton
                       className="button small"
                       disabled={busy}
                       onClick={() => openDrive(selected)}
                     >
                       <Cloud size={15} />
                       Đọc thư mục Drive
-                    </button>
+                    </UiButton>
                   )}
                   {session.user.role !== "finance" && (
-                    <button
+                    <UiButton
                       className="button small"
                       onClick={() =>
                         setForm({ kind: "document", projectId: selected.id })
@@ -2361,13 +2367,13 @@ export default function App() {
                     >
                       <Plus size={15} />
                       Thêm hồ sơ
-                    </button>
+                    </UiButton>
                   )}
                 </div>
                 {w.documents
                   .filter((d) => d.projectId === selected.id)
                   .map((d) => (
-                    <button
+                    <UiButton
                       className="detail-file"
                       key={d.id}
                       onClick={() => openUrl(d.url)}
@@ -2380,7 +2386,7 @@ export default function App() {
                         </small>
                       </span>
                       <ArrowUpRight size={18} />
-                    </button>
+                    </UiButton>
                   ))}
               </>
             )}
@@ -2389,7 +2395,7 @@ export default function App() {
                 <div className="toolbar">
                   <span>Giao dịch thực nhận của dự án</span>
                   {canMoney && (
-                    <button
+                    <UiButton
                       className="button small"
                       onClick={() =>
                         setForm({ kind: "receipt", projectId: selected.id })
@@ -2397,7 +2403,7 @@ export default function App() {
                     >
                       <Plus size={15} />
                       Ghi nhận
-                    </button>
+                    </UiButton>
                   )}
                 </div>
                 {w.receipts
@@ -2470,10 +2476,10 @@ export default function App() {
           onClose={() => setResetConfirm(false)}
         >
           <div className="form-actions">
-            <button className="button" onClick={() => setResetConfirm(false)}>
+            <UiButton className="button" onClick={() => setResetConfirm(false)}>
               Giữ lại
-            </button>
-            <button
+            </UiButton>
+            <UiButton
               className="button primary"
               onClick={() => {
                 const fresh = resetDemo();
@@ -2485,7 +2491,7 @@ export default function App() {
               }}
             >
               Khôi phục
-            </button>
+            </UiButton>
           </div>
         </Modal>
       )}
@@ -2497,7 +2503,7 @@ export default function App() {
         >
           <div className="drive-files">
             {driveView.files.map((f) => (
-              <button
+              <UiButton
                 key={f.id}
                 className="detail-file"
                 onClick={() =>
@@ -2513,19 +2519,19 @@ export default function App() {
                   <small>{dateLabel(f.modifiedTime)}</small>
                 </span>
                 <ArrowUpRight size={16} />
-              </button>
+              </UiButton>
             ))}
             {!driveView.files.length && (
               <Empty title="Thư mục chưa có tài liệu" />
             )}
             {driveView.nextPageToken && (
-              <button
+              <UiButton
                 className="button"
                 disabled={busy}
                 onClick={() => openDrive(project(driveView.projectId)!, true)}
               >
                 Tải thêm
-              </button>
+              </UiButton>
             )}
           </div>
         </Modal>
@@ -2545,7 +2551,7 @@ function SearchBox({
   return (
     <label className="search-box">
       <Search size={17} />
-      <input
+      <UiInput
         type="search"
         aria-label={placeholder}
         placeholder={placeholder}
@@ -2553,9 +2559,9 @@ function SearchBox({
         onChange={(e) => onChange(e.target.value)}
       />
       {value && (
-        <button aria-label="Xóa tìm kiếm" onClick={() => onChange("")}>
+        <UiButton aria-label="Xóa tìm kiếm" onClick={() => onChange("")}>
           <X size={14} />
-        </button>
+        </UiButton>
       )}
     </label>
   );
@@ -2619,11 +2625,31 @@ function CashChart({ receipts }: { receipts: Workspace["receipts"] }) {
 }
 function Portfolio({ w }: { w: Workspace }) {
   const groups = [
-    { id: "ontrack", label: "Đúng tiến độ", color: "#345e50" },
-    { id: "late", label: "Chậm tiến độ", color: "#c28a53" },
-    { id: "risk", label: "Cần chú ý", color: "#dbc078" },
-    { id: "paused", label: "Tạm dừng", color: "#c1c8bc" },
-    { id: "completed", label: "Hoàn thành", color: "#9eaf8d" },
+    {
+      id: "ontrack",
+      label: "Đúng tiến độ",
+      color: "var(--g-color-base-positive-heavy)",
+    },
+    {
+      id: "late",
+      label: "Chậm tiến độ",
+      color: "var(--g-color-base-danger-heavy)",
+    },
+    {
+      id: "risk",
+      label: "Cần chú ý",
+      color: "var(--g-color-base-warning-heavy)",
+    },
+    {
+      id: "paused",
+      label: "Tạm dừng",
+      color: "var(--g-color-base-neutral-heavy)",
+    },
+    {
+      id: "completed",
+      label: "Hoàn thành",
+      color: "var(--g-color-base-info-heavy)",
+    },
   ].map((g) => ({
     ...g,
     count: w.projects.filter(

@@ -1,3 +1,4 @@
+import { UiButton, UiInput, UiTextArea } from "./ui";
 import { useState } from "react";
 import type { Workspace, Project, Task, Person } from "../shared/types";
 import { localDate } from "../shared/metrics";
@@ -80,7 +81,7 @@ export default function EntryForm({
         <>
           <div className="form-grid">
             <Field label="Mã dự án">
-              <input
+              <UiInput
                 name="code"
                 defaultValue={p?.code}
                 placeholder="DA-027"
@@ -88,7 +89,7 @@ export default function EntryForm({
               />
             </Field>
             <Field label="Địa điểm">
-              <input
+              <UiInput
                 name="location"
                 defaultValue={p?.location}
                 placeholder="Tuyên Quang"
@@ -96,7 +97,7 @@ export default function EntryForm({
             </Field>
           </div>
           <Field label="Tên dự án">
-            <input
+            <UiInput
               name="name"
               defaultValue={p?.name}
               placeholder="Tên công trình / gói tư vấn"
@@ -104,7 +105,7 @@ export default function EntryForm({
             />
           </Field>
           <Field label="Chủ đầu tư">
-            <input
+            <UiInput
               name="client"
               defaultValue={p?.client}
               placeholder="Tên chủ đầu tư hoặc Ban QLDA"
@@ -131,7 +132,7 @@ export default function EntryForm({
               </select>
             </Field>
             <Field label="Giá trị hợp đồng (VND)">
-              <input
+              <UiInput
                 name="contract"
                 type="number"
                 min="0"
@@ -141,7 +142,7 @@ export default function EntryForm({
               />
             </Field>
             <Field label="Giá trị đã nghiệm thu (VND)">
-              <input
+              <UiInput
                 name="accepted"
                 type="number"
                 min="0"
@@ -151,7 +152,7 @@ export default function EntryForm({
               />
             </Field>
             <Field label="Ngày bắt đầu">
-              <input
+              <UiInput
                 name="start"
                 type="date"
                 defaultValue={p?.start || localDate()}
@@ -159,11 +160,11 @@ export default function EntryForm({
               />
             </Field>
             <Field label="Hạn bàn giao">
-              <input name="due" type="date" defaultValue={p?.due} required />
+              <UiInput name="due" type="date" defaultValue={p?.due} required />
             </Field>
           </div>
           <Field label="Giai đoạn hiện tại">
-            <input
+            <UiInput
               name="phase"
               defaultValue={p?.phase || "Thu thập đầu vào"}
               required
@@ -174,7 +175,7 @@ export default function EntryForm({
               label="Trello Board ID"
               hint="Mã bảng Trello. Ánh xạ các cột tại Kết nối trước khi đồng bộ."
             >
-              <input
+              <UiInput
                 name="boardId"
                 defaultValue={p?.boardId}
                 placeholder="Ví dụ: 64a…"
@@ -184,7 +185,7 @@ export default function EntryForm({
               label="Google Drive Folder ID"
               hint="Phần mã sau /folders/ trong liên kết thư mục."
             >
-              <input
+              <UiInput
                 name="driveFolderId"
                 defaultValue={p?.driveFolderId}
                 placeholder="Mã thư mục hồ sơ"
@@ -198,7 +199,7 @@ export default function EntryForm({
           {projects}
           <div className="form-grid">
             <Field label="Số tiền đã nhận (VND)">
-              <input
+              <UiInput
                 name="amount"
                 type="number"
                 min="1"
@@ -208,7 +209,7 @@ export default function EntryForm({
               />
             </Field>
             <Field label="Ngày nhận">
-              <input
+              <UiInput
                 name="date"
                 type="date"
                 defaultValue={localDate()}
@@ -217,7 +218,7 @@ export default function EntryForm({
             </Field>
           </div>
           <Field label="Mã chứng từ / giao dịch">
-            <input
+            <UiInput
               name="reference"
               placeholder="PT-009 hoặc mã giao dịch ngân hàng"
               required
@@ -239,7 +240,7 @@ export default function EntryForm({
             </select>
           </Field>
           <Field label="Ghi chú">
-            <textarea name="note" placeholder="Nội dung thanh toán" />
+            <UiTextArea name="note" placeholder="Nội dung thanh toán" />
           </Field>
         </>
       )}
@@ -247,7 +248,7 @@ export default function EntryForm({
         <>
           {projects}
           <Field label="Tên đợt thanh toán">
-            <input
+            <UiInput
               name="title"
               placeholder="Thanh toán hồ sơ thiết kế đợt 1"
               required
@@ -255,10 +256,10 @@ export default function EntryForm({
           </Field>
           <div className="form-grid">
             <Field label="Số tiền phải thu (VND)">
-              <input name="amount" type="number" min="1" step="1" required />
+              <UiInput name="amount" type="number" min="1" step="1" required />
             </Field>
             <Field label="Ngày đến hạn">
-              <input name="due" type="date" required />
+              <UiInput name="due" type="date" required />
             </Field>
           </div>
           <p className="form-note">
@@ -271,14 +272,14 @@ export default function EntryForm({
         <>
           {projects}
           <Field label="Tên hồ sơ">
-            <input
+            <UiInput
               name="name"
               placeholder="DA-026_Ban-ve-kien-truc_V03.pdf"
               required
             />
           </Field>
           <Field label="Liên kết Google Drive">
-            <input
+            <UiInput
               name="url"
               type="url"
               placeholder="https://drive.google.com/file/d/…/view"
@@ -303,7 +304,7 @@ export default function EntryForm({
               </select>
             </Field>
             <Field label="Phiên bản">
-              <input name="version" defaultValue="V01" required />
+              <UiInput name="version" defaultValue="V01" required />
             </Field>
           </div>
           <Field label="Trạng thái">
@@ -321,10 +322,10 @@ export default function EntryForm({
       {kind === "member" && (
         <>
           <Field label="Họ và tên">
-            <input name="name" defaultValue={member?.name} required />
+            <UiInput name="name" defaultValue={member?.name} required />
           </Field>
           <Field label="Email đăng nhập">
-            <input
+            <UiInput
               name="email"
               type="email"
               defaultValue={member?.email}
@@ -341,7 +342,7 @@ export default function EntryForm({
               </select>
             </Field>
             <Field label="Chuyên môn">
-              <input
+              <UiInput
                 name="discipline"
                 defaultValue={member?.discipline}
                 placeholder="Kiến trúc, kết cấu…"
@@ -351,7 +352,7 @@ export default function EntryForm({
           </div>
           <div className="form-grid">
             <Field label="Phòng ban">
-              <input
+              <UiInput
                 name="department"
                 maxLength={100}
                 defaultValue={member?.department}
@@ -359,7 +360,7 @@ export default function EntryForm({
               />
             </Field>
             <Field label="Team">
-              <input
+              <UiInput
                 name="team"
                 maxLength={100}
                 defaultValue={member?.team}
@@ -368,7 +369,7 @@ export default function EntryForm({
             </Field>
           </div>
           <Field label="Năng lực làm việc (giờ/tuần)">
-            <input
+            <UiInput
               name="capacity"
               type="number"
               min="1"
@@ -381,7 +382,7 @@ export default function EntryForm({
             label="Trello Member ID"
             hint="Dùng để đối chiếu người được giao thẻ Trello."
           >
-            <input
+            <UiInput
               name="trelloId"
               defaultValue={member?.trelloId}
               placeholder="Mã thành viên 24 ký tự"
@@ -397,7 +398,7 @@ export default function EntryForm({
           </p>
           <div className="form-grid">
             <Field label="Trọng số">
-              <input
+              <UiInput
                 name="weight"
                 type="number"
                 min="0"
@@ -408,7 +409,7 @@ export default function EntryForm({
               />
             </Field>
             <Field label="Hoàn thành được xác nhận (%)">
-              <input
+              <UiInput
                 name="progress"
                 type="number"
                 min="0"
@@ -418,7 +419,7 @@ export default function EntryForm({
               />
             </Field>
             <Field label="Khối lượng dự kiến (giờ)">
-              <input
+              <UiInput
                 name="hours"
                 type="number"
                 min="0"
@@ -440,7 +441,7 @@ export default function EntryForm({
             </Field>
           </div>
           <Field label="Vướng mắc / nguyên nhân">
-            <textarea name="blockReason" defaultValue={t.blockReason} />
+            <UiTextArea name="blockReason" defaultValue={t.blockReason} />
           </Field>
         </>
       )}
@@ -450,9 +451,9 @@ export default function EntryForm({
         </div>
       )}
       <div className="form-actions">
-        <button type="button" className="button" onClick={onClose}>
+        <UiButton type="button" className="button" onClick={onClose}>
           Hủy
-        </button>
+        </UiButton>
         <Submit
           busy={busy}
           label={

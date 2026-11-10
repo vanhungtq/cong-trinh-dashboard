@@ -1,3 +1,4 @@
+import { UiButton, UiInput, UiTextArea } from "./ui";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Building2,
@@ -319,34 +320,34 @@ export default function VirtualOffice({
         </label>
         <label>
           Tìm nhân sự
-          <input
+          <UiInput
             aria-label="Tìm nhân sự văn phòng"
             placeholder="Tên hoặc chuyên môn…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </label>
-        <button
+        <UiButton
           className="button"
           disabled={busy}
           onClick={() => void update(false)}
         >
           <RefreshCw size={15} />
           {busy ? "Đang cập nhật…" : "Cập nhật dữ liệu"}
-        </button>
-        <button
+        </UiButton>
+        <UiButton
           className="button"
           aria-pressed={activities}
           onClick={() => setActivities((v) => !v)}
         >
           <Layers size={15} />
           {activities ? "Ẩn nhân viên ảo" : "Hiện nhân viên ảo"}
-        </button>
+        </UiButton>
         {session.mode === "live" && (
-          <button className="button" onClick={() => setPoll(!poll)}>
+          <UiButton className="button" onClick={() => setPoll(!poll)}>
             {poll ? <Pause size={15} /> : <Play size={15} />}{" "}
             {poll ? "Tạm dừng" : "Tiếp tục"}
-          </button>
+          </UiButton>
         )}
       </section>
       {error && (
@@ -363,27 +364,27 @@ export default function VirtualOffice({
               Sơ đồ văn phòng 3D
             </span>
             <div>
-              <button
+              <UiButton
                 className="icon-button"
                 aria-label="Thu nhỏ văn phòng"
                 onClick={() => scene.current?.zoom(1.2)}
               >
                 <Minus size={16} />
-              </button>
-              <button
+              </UiButton>
+              <UiButton
                 className="icon-button"
                 aria-label="Phóng to văn phòng"
                 onClick={() => scene.current?.zoom(0.83)}
               >
                 <Plus size={16} />
-              </button>
-              <button
+              </UiButton>
+              <UiButton
                 className="icon-button"
                 aria-label="Đặt lại góc nhìn"
                 onClick={() => scene.current?.reset()}
               >
                 <RotateCcw size={16} />
-              </button>
+              </UiButton>
             </div>
           </header>
           <div
@@ -417,22 +418,22 @@ export default function VirtualOffice({
               {currentPage + 1}/{pages}
             </span>
             <div>
-              <button
+              <UiButton
                 className="button small"
                 disabled={!currentPage}
                 onClick={() => setPage((p) => p - 1)}
               >
                 <ChevronLeft size={15} />
                 Trước
-              </button>
-              <button
+              </UiButton>
+              <UiButton
                 className="button small"
                 disabled={currentPage >= pages - 1}
                 onClick={() => setPage((p) => p + 1)}
               >
                 Tiếp
                 <ChevronRight size={15} />
-              </button>
+              </UiButton>
             </div>
           </footer>
         </section>
@@ -502,12 +503,12 @@ export default function VirtualOffice({
                       </small>
                       {t.blockReason && <p>{t.blockReason}</p>}
                       {["admin", "manager"].includes(session.user.role) && (
-                        <button
+                        <UiButton
                           className="button small"
                           onClick={() => onEditTask(t)}
                         >
                           Cập nhật task
-                        </button>
+                        </UiButton>
                       )}
                     </article>
                   ))}
@@ -532,7 +533,7 @@ export default function VirtualOffice({
                   {r.part > 1 ? " · Khu " + r.part : ""}
                 </h4>
                 {r.people.map((p) => (
-                  <button
+                  <UiButton
                     key={p.person.id}
                     className={selected === p.person.id ? "selected" : ""}
                     onClick={() => setSelected(p.person.id)}
@@ -547,7 +548,7 @@ export default function VirtualOffice({
                       </small>
                     </span>
                     <i style={{ background: officeStates[p.state].color }} />
-                  </button>
+                  </UiButton>
                 ))}
               </div>
             ))}
@@ -583,20 +584,20 @@ export default function VirtualOffice({
             {canSync && (
               <div>
                 <label>
-                  <input
+                  <UiInput
                     type="checkbox"
                     checked={autoTrello}
                     onChange={(e) => setAutoTrello(e.target.checked)}
                   />
                   Đồng bộ Trello mỗi phút khi mở văn phòng
                 </label>
-                <button
+                <UiButton
                   className="button small"
                   disabled={busy}
                   onClick={() => void update(true)}
                 >
                   Đồng bộ Trello ngay
-                </button>
+                </UiButton>
               </div>
             )}
             <small>
